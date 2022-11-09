@@ -37,7 +37,7 @@ steps:
         from_secret: SOCKS5_PROXY
 
   - name: java
-    image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11
     commands:
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
       - mvn clean install -Prelease
