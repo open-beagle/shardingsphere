@@ -45,6 +45,15 @@ steps:
       - mvn clean install -Prelease
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
 
+  - name: curl
+    image: registry.cn-qingdao.aliyuncs.com/wod/curl:alpine
+    environment:
+      MYSQL_CONNECTOR_VERSION: 5.1.49
+    commands:
+      - rm -rf .tmp
+      - mkdir -p .tmp
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
+
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
     volumes:
@@ -56,7 +65,7 @@ steps:
       repo: wod/awecloud-dbproxy
       version: '5.1.2'
       channel: 'amd64'
-      args: 'TARGETOS=linux,TARGETARCH=amd64'
+      args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
       registry_user:
         from_secret: REGISTRY_USER_ALIYUN
@@ -74,7 +83,7 @@ steps:
       repo: wod/awecloud-dbproxy
       version: '5.1.2'
       channel: 'arm64'
-      args: 'TARGETOS=linux,TARGETARCH=arm64'
+      args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
       registry_user:
         from_secret: REGISTRY_USER_ALIYUN
