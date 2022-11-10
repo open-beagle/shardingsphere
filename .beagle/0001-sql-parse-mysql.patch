@@ -1,11 +1,12 @@
-From 2e942dd0d33d59441da569352a1a89a2f89e95a3 Mon Sep 17 00:00:00 2001
+From 10fba9bf6f6cd7da28ce9ed9a220193864816e01 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 10 Nov 2022 16:57:14 +0800
-Subject: [PATCH] sql-parse-mysql
+Date: Thu, 10 Nov 2022 18:19:50 +0800
+Subject: [PATCH] xx
 
 ---
  .../src/main/antlr4/imports/mysql/MySQLKeyword.g4             | 4 ----
- 1 file changed, 4 deletions(-)
+ .../src/main/resources/sql/unsupported/unsupported.xml        | 2 --
+ 2 files changed, 6 deletions(-)
 
 diff --git a/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4 b/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
 index 9085b257d16..63a43341389 100644
@@ -22,6 +23,26 @@ index 9085b257d16..63a43341389 100644
  READ
      : R E A D
      ;
+diff --git a/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml b/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
+index 1bff962f345..ac41d913a7c 100644
+--- a/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
++++ b/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
+@@ -1456,7 +1456,6 @@
+     <sql-case id="select_by_mysql_source_test_case883" value="select @``" db-types="MySQL" />
+     <sql-case id="select_by_mysql_source_test_case884" value="select @check, @t4_bi_called, @t4_bu_called" db-types="MySQL" />
+     <sql-case id="select_by_mysql_source_test_case885" value="select @g1 between @g1 and ST_GeomFromText(&apos;POLYGON((30 30,40 40,50 50,30 50,30 40,30 30))&apos;)" db-types="MySQL" />
+-    <sql-case id="select_by_mysql_source_test_case886" value="select @rownum := @rownum + 1 as `row`, @rank := IF(@prev_score!=a, @rownum, @rank) as `rank`, @prev_score := a as score from t1 order by score desc" db-types="MySQL" />
+     <sql-case id="select_by_mysql_source_test_case887" value="select @test_int,@test_double,@test_string,@test_string2,@select" db-types="MySQL" />
+     <sql-case id="select_by_mysql_source_test_case888" value="select AES_ENCRYPT(@ENCSTR, @KEYS, @IV)=AES_ENCRYPT(@ENCSTR, @KEYS, @IV1)" db-types="MySQL" />
+     <sql-case id="select_by_mysql_source_test_case889" value="select HEX(0x19c9bbcce9e0a88f5212572b0c5b9e6d0 | _binary 0x13c19e5cfdf03b19518cbe3d65faf10d2), HEX(0x19c9bbcce9e0a88f5212572b0c5b9e6d0 ^ _binary 0x13c19e5cfdf03b19518cbe3d65faf10d2), HEX(0x19c9bbcce9e0a88f5212572b0c5b9e6d0 &amp; _binary 0x13c19e5cfdf03b19518cbe3d65faf10d2), HEX(~ _binary 0x19c9bbcce9e0a88f5212572b0c5b9e6d0), HEX(~ _binary 0x13c19e5cfdf03b19518cbe3d65faf10d2)" db-types="MySQL" />
+@@ -3859,7 +3858,6 @@
+     <sql-case id="low_set_by_mysql_source_test_case42" value="set @check=0, @t4_bi_called=0, @t4_bu_called=0" db-types="MySQL" />
+     <sql-case id="low_set_by_mysql_source_test_case43" value="set @dec=5" db-types="MySQL" />
+     <sql-case id="low_set_by_mysql_source_test_case64" value="set @q = repeat(&apos;q&apos;, 256)" db-types="MySQL" />
+-    <sql-case id="low_set_by_mysql_source_test_case65" value="set @rank := 0" db-types="MySQL" />
+     <sql-case id="low_set_by_mysql_source_test_case67" value="set @select=2,@t5=1.23456" db-types="MySQL" />
+     <sql-case id="low_set_by_mysql_source_test_case68" value="set @test_int=10,@test_double=1e-10,@test_string=&quot;abcdeghi&quot;,@test_string2=&quot;abcdefghij&quot;,@select=NULL" db-types="MySQL" />
+     <sql-case id="low_set_by_mysql_source_test_case72" value="set charset default,@dummy=&apos;A&apos;" db-types="MySQL" />
 -- 
 2.25.1
 
