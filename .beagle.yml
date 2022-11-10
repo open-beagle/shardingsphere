@@ -42,7 +42,7 @@ steps:
       - git apply .beagle/0001-sql-parse-mysql.patch
 
   - name: java
-    image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11
+    image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser
       - mvn clean install -Prelease    

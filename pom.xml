@@ -1133,6 +1133,8 @@
                 <version>${apache-rat-plugin.version}</version>
                 <configuration>
                     <excludes>
+                        <exclude>**/.beagle/**</exclude>
+                        <exclude>**/.beagle.yml</exclude>
                         <exclude>**/gen/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>**/logs/**</exclude>

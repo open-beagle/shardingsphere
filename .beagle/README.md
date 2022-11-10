@@ -16,7 +16,7 @@ docker run -it --rm \
 -v $PWD/:/go/src/github.com/apache/shardingsphere \
 -w /go/src/github.com/apache/shardingsphere/shardingsphere-proxy \
 -e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
-registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11 \
+registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
 bash -c 'mvn clean install -Prelease'
 
 # shardingsphere-distribution/shardingsphere-proxy-distribution
@@ -24,7 +24,7 @@ docker run -it --rm \
 -v $PWD/:/go/src/github.com/apache/shardingsphere \
 -w /go/src/github.com/apache/shardingsphere/shardingsphere-distribution/shardingsphere-proxy-distribution \
 -e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
-registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11 \
+registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
 bash -c 'mvn clean install -Prelease'
 
 # full cache
@@ -32,7 +32,7 @@ docker run -it --rm \
 -v $PWD/:/go/src/github.com/apache/shardingsphere \
 -w /go/src/github.com/apache/shardingsphere \
 -e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
-registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11 \
+registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
 bash -c 'mvn clean install -Prelease'
 ```
 
