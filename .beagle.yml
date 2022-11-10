@@ -39,7 +39,7 @@ steps:
   - name: fetch
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
     commands:
-      - git patch .beagle/0001-sql-parse-mysql.patch
+      - git apply .beagle/0001-sql-parse-mysql.patch
 
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-11
