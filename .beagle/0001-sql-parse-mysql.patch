@@ -1,0 +1,27 @@
+From 2e942dd0d33d59441da569352a1a89a2f89e95a3 Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Thu, 10 Nov 2022 16:57:14 +0800
+Subject: [PATCH] sql-parse-mysql
+
+---
+ .../src/main/antlr4/imports/mysql/MySQLKeyword.g4             | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4 b/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
+index 9085b257d16..63a43341389 100644
+--- a/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
++++ b/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
+@@ -1879,10 +1879,6 @@ RANGE
+     : R A N G E
+     ;
+ 
+-RANK
+-    : R A N K
+-    ;
+-
+ READ
+     : R E A D
+     ;
+-- 
+2.25.1
+

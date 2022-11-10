@@ -52,3 +52,4 @@ gen/
 
 .m2/
 .repository/
+!/.beagle/*.patch
