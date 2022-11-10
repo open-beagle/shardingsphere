@@ -44,7 +44,9 @@ steps:
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
-      - cd $DRONE_WORKSPACE/shardingsphere-sql-parser
+      - cd $DRONE_WORKSPACE/shardingsphere-test/shardingsphere-parser-test
+      - mvn clean install -Prelease       
+      - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql
       - mvn clean install -Prelease    
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
       - mvn clean install -Prelease
