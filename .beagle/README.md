@@ -11,10 +11,18 @@ git merge 5.1.2
 ## build
 
 ```bash
+# shardingsphere-test
+docker run -it --rm \
+-v $PWD/:/go/src/github.com/apache/shardingsphere \
+-w /go/src/github.com/apache/shardingsphere/shardingsphere-test/shardingsphere-parser-test \
+-e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
+registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
+bash -c 'mvn clean install -Prelease'
+
 # shardingsphere-sql-parser
 docker run -it --rm \
 -v $PWD/:/go/src/github.com/apache/shardingsphere \
--w /go/src/github.com/apache/shardingsphere/shardingsphere-sql-parser \
+-w /go/src/github.com/apache/shardingsphere/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql \
 -e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
 registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
 bash -c 'mvn clean install -Prelease'
