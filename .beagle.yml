@@ -36,7 +36,7 @@ steps:
       proxy:
         from_secret: SOCKS5_PROXY
 
-  - name: fetch
+  - name: patch
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
     commands:
       - git patch .beagle/0001-sql-parse-mysql.patch
