@@ -33,7 +33,7 @@ docker run -it --rm \
 -w /go/src/github.com/apache/shardingsphere/shardingsphere-proxy \
 -e DRONE_WORKSPACE=/go/src/github.com/apache/shardingsphere \
 registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17 \
-bash -c 'mvn clean install -Prelease'
+bash -c 'mvn clean install -Prelease -Dcheckstyle.skip=true'
 
 # shardingsphere-distribution/shardingsphere-proxy-distribution
 docker run -it --rm \

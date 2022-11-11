@@ -49,7 +49,7 @@ steps:
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql
       - mvn clean install -Prelease    
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
-      - mvn clean install -Prelease
+      - mvn clean install -Prelease -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
       - mvn clean install -Prelease
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
