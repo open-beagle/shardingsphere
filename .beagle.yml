@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - main
+    - 
 
 volumes:
   - name: docker
@@ -72,7 +72,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '5.1.2'
+      version: '5.1.2-20221111'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -90,24 +90,13 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '5.1.2'
+      version: '5.1.2-20221111'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
       registry_user:
         from_secret: REGISTRY_USER_ALIYUN
       registry_password:
-        from_secret: REGISTRY_PASSWORD_ALIYUN
-
-  - name: docker-arch
-    image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker-manifest:1.0
-    settings:
-      platforms: linux/amd64,linux/arm64
-      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-ARCH
-      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2
-      username:
-        from_secret: REGISTRY_USER_ALIYUN
-      password:
         from_secret: REGISTRY_PASSWORD_ALIYUN
 
 ---
