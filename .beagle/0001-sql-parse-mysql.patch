@@ -1,15 +1,157 @@
-From 10fba9bf6f6cd7da28ce9ed9a220193864816e01 Mon Sep 17 00:00:00 2001
-From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 10 Nov 2022 18:19:50 +0800
-Subject: [PATCH] xx
+From 7d0fc914673c78dfe2bcccfeb53e6b6eef3afde4 Mon Sep 17 00:00:00 2001
+From: wuwanli <wuwanli@wodcloud.com>
+Date: Fri, 11 Nov 2022 16:57:00 +0800
+Subject: [PATCH] =?UTF-8?q?sql=20=E8=BD=AC=E6=8D=A2?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
 ---
- .../src/main/antlr4/imports/mysql/MySQLKeyword.g4             | 4 ----
- .../src/main/resources/sql/unsupported/unsupported.xml        | 2 --
- 2 files changed, 6 deletions(-)
+ .../DatabaseCommunicationEngineFactory.java   |   3 +-
+ .../proxy/backend/util/SQLReplaceUtil.java    | 109 ++++++++++++++++++
+ .../main/antlr4/imports/mysql/MySQLKeyword.g4 |   4 -
+ .../resources/sql/unsupported/unsupported.xml |   2 -
+ 4 files changed, 111 insertions(+), 7 deletions(-)
+ create mode 100644 shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/util/SQLReplaceUtil.java
 
+diff --git a/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/communication/DatabaseCommunicationEngineFactory.java b/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/communication/DatabaseCommunicationEngineFactory.java
+index 164a3e8f03..6eb80d914f 100644
+--- a/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/communication/DatabaseCommunicationEngineFactory.java
++++ b/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/communication/DatabaseCommunicationEngineFactory.java
+@@ -28,6 +28,7 @@ import org.apache.shardingsphere.proxy.backend.communication.jdbc.connection.JDB
+ import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxBackendConnection;
+ import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxDatabaseCommunicationEngine;
+ import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
++import org.apache.shardingsphere.proxy.backend.util.SQLReplaceUtil;
+ 
+ import java.util.Collections;
+ import java.util.List;
+@@ -61,7 +62,7 @@ public final class DatabaseCommunicationEngineFactory {
+      */
+     public <T extends DatabaseCommunicationEngine> T newTextProtocolInstance(final SQLStatementContext<?> sqlStatementContext, final String sql, final BackendConnection<?> backendConnection) {
+         ShardingSphereDatabase database = ProxyContext.getInstance().getDatabase(backendConnection.getConnectionSession().getDatabaseName());
+-        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, sql, Collections.emptyList());
++        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, SQLReplaceUtil.replace(sql), Collections.emptyList());
+         T result;
+         if (backendConnection instanceof JDBCBackendConnection) {
+             JDBCBackendConnection jdbcBackendConnection = (JDBCBackendConnection) backendConnection;
+diff --git a/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/util/SQLReplaceUtil.java b/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/util/SQLReplaceUtil.java
+new file mode 100644
+index 0000000000..30e7a5b3d7
+--- /dev/null
++++ b/shardingsphere-proxy/shardingsphere-proxy-backend/src/main/java/org/apache/shardingsphere/proxy/backend/util/SQLReplaceUtil.java
+@@ -0,0 +1,109 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE
++ * file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file
++ * to You under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
++ * License. You may obtain a copy of the License at
++ *
++ * http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
++ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
++ * specific language governing permissions and limitations under the License.
++ */
++
++package org.apache.shardingsphere.proxy.backend.util;
++
++import java.io.File;
++import java.util.Map;
++import java.util.Set;
++import java.util.concurrent.ConcurrentHashMap;
++
++import org.apache.commons.lang3.StringUtils;
++
++import com.fasterxml.jackson.databind.JsonNode;
++import com.fasterxml.jackson.databind.ObjectMapper;
++import com.fasterxml.jackson.databind.node.ArrayNode;
++
++import lombok.extern.slf4j.Slf4j;
++
++@Slf4j
++public class SQLReplaceUtil {
++    public static Map<String, String> BEFORE_REPLACE_STRING_MAP = new ConcurrentHashMap<>();
++    public static Map<String, String> BEFORE_REPLACE_SQL_MAP = new ConcurrentHashMap<>();
++    public static final String REFLESH_SQL = "REFLESH_SQL";
++    public static final String SQL_FILE_PATH = "SQL_FILE_PATH";
++    static {
++        SQLReplaceUtil.parseSqlFile();
++    }
++
++    // 初次加载json 到map里头
++    private static void parseSqlFile() {
++        String sqlFilePath = System.getenv(SQL_FILE_PATH);
++        if (StringUtils.isNotBlank(sqlFilePath)) {
++            try {
++                ObjectMapper objectMapper = new ObjectMapper();
++                ArrayNode arrayNode = (ArrayNode)objectMapper.readTree(new File(sqlFilePath));
++                for (JsonNode jsonNode : arrayNode) {
++                    String type = jsonNode.get("type").textValue();
++                    ArrayNode mapList = (ArrayNode)jsonNode.get("list");
++                    for (JsonNode jsonNode1 : mapList) {
++                        String key = jsonNode1.get("key").textValue();
++                        String value = jsonNode1.get("value").textValue();
++                        if ("string".equalsIgnoreCase(type)) {
++                            BEFORE_REPLACE_STRING_MAP.put(key, value);
++                        }
++                        if ("sql".equalsIgnoreCase(type)) {
++                            BEFORE_REPLACE_SQL_MAP.put(key, value);
++                        }
++                    }
++                }
++            } catch (Exception exception) {
++                log.error("parseSqlFile exception:", exception);
++            }
++        }
++    }
++
++    private static String decode(String encodeStr) {
++        byte[] decodeBytes = java.util.Base64.getDecoder().decode(encodeStr);
++        return new String(decodeBytes);
++    }
++
++    public static String replace(final String originalSQL) {
++        String changeSQL = originalSQL;
++        try {
++            // 是否动态刷新
++            String isRefreshSql = System.getenv(REFLESH_SQL);
++            if ("true".equalsIgnoreCase(isRefreshSql)) {
++                BEFORE_REPLACE_STRING_MAP.clear();
++                BEFORE_REPLACE_SQL_MAP.clear();
++                parseSqlFile();
++            }
++            // 优先替换整个sql
++            Set<String> sqlKeySet = BEFORE_REPLACE_SQL_MAP.keySet();
++            for (String key : sqlKeySet) {
++                String value = BEFORE_REPLACE_SQL_MAP.get(key);
++                key = decode(key);
++                if (changeSQL.contains(key)) {
++                    if (StringUtils.isBlank(value)) {
++                        continue;
++                    }
++                    return decode(value);
++                }
++            }
++            // 其次替换字符
++            Set<String> stringKeySet = BEFORE_REPLACE_STRING_MAP.keySet();
++            for (String key : stringKeySet) {
++                String value = decode(BEFORE_REPLACE_STRING_MAP.get(key));
++                key = decode(key);
++                if (changeSQL.contains(key)) {
++                    changeSQL = changeSQL.replace(key, value);
++                }
++            }
++            log.info("replace result:" + changeSQL);
++        } catch (Exception exception) {
++            log.error("sql replace exception:", exception);
++        }
++        // 删除最后sql 以;字符结尾
++        return changeSQL.replaceFirst(";$", "");
++    }
++}
 diff --git a/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4 b/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
-index 9085b257d16..63a43341389 100644
+index 9085b257d1..63a4334138 100644
 --- a/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
 +++ b/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql/src/main/antlr4/imports/mysql/MySQLKeyword.g4
 @@ -1879,10 +1879,6 @@ RANGE
@@ -24,7 +166,7 @@ index 9085b257d16..63a43341389 100644
      : R E A D
      ;
 diff --git a/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml b/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
-index 1bff962f345..ac41d913a7c 100644
+index 1bff962f34..ac41d913a7 100644
 --- a/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
 +++ b/shardingsphere-test/shardingsphere-parser-test/src/main/resources/sql/unsupported/unsupported.xml
 @@ -1456,7 +1456,6 @@
@@ -44,5 +186,5 @@ index 1bff962f345..ac41d913a7c 100644
      <sql-case id="low_set_by_mysql_source_test_case68" value="set @test_int=10,@test_double=1e-10,@test_string=&quot;abcdeghi&quot;,@test_string2=&quot;abcdefghij&quot;,@select=NULL" db-types="MySQL" />
      <sql-case id="low_set_by_mysql_source_test_case72" value="set charset default,@dummy=&apos;A&apos;" db-types="MySQL" />
 -- 
-2.25.1
+2.34.1.windows.1
 
