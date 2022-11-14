@@ -133,4 +133,3 @@ name: SECRET_KEY_MINIO
 get:
   name: SECRET_KEY_MINIO
   path: devops-secrets
-  
