@@ -19,6 +19,7 @@ package org.apache.shardingsphere.proxy.frontend.mysql.command.query.builder;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.db.protocol.mysql.constant.MySQLBinaryColumnType;
 import org.apache.shardingsphere.db.protocol.mysql.packet.command.query.MySQLColumnDefinition41Packet;
 import org.apache.shardingsphere.db.protocol.mysql.packet.command.query.MySQLColumnFieldDetailFlag;
@@ -38,6 +39,7 @@ import java.util.List;
 /**
  * Response packet builder.
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ResponsePacketBuilder {
     
@@ -53,6 +55,9 @@ public final class ResponsePacketBuilder {
         int sequenceId = 0;
         List<QueryHeader> queryHeaders = queryResponseHeader.getQueryHeaders();
         result.add(new MySQLFieldCountPacket(++sequenceId, queryHeaders.size()));
+        // 方便定位问题。调测时用到 add by wuwanli
+        queryHeaders.forEach(each -> log.debug("table=" + each.getTable() + "columnTypeName=" + each.getColumnTypeName()
+            + ",columnType=" + each.getColumnType() + "" + ",columnName=" + each.getColumnName()));
         for (QueryHeader each : queryHeaders) {
             result.add(new MySQLColumnDefinition41Packet(++sequenceId, characterSet, getColumnFieldDetailFlag(each), each.getSchema(), each.getTable(), each.getTable(),
                     each.getColumnLabel(), each.getColumnName(), each.getColumnLength(), MySQLBinaryColumnType.valueOfJDBCType(each.getColumnType()), each.getDecimals(), false));
