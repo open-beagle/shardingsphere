@@ -19,6 +19,7 @@ package org.apache.shardingsphere.proxy.backend.communication;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.binder.LogicSQL;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.executor.sql.prepare.driver.jdbc.JDBCDriverType;
@@ -28,6 +29,7 @@ import org.apache.shardingsphere.proxy.backend.communication.jdbc.connection.JDB
 import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxBackendConnection;
 import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxDatabaseCommunicationEngine;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
+import org.apache.shardingsphere.proxy.backend.util.SQLReplaceUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.List;
 /**
  * Database communication engine factory.
  */
+@Slf4j
 @SuppressWarnings({"unchecked", "rawtypes"})
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DatabaseCommunicationEngineFactory {
@@ -61,7 +64,8 @@ public final class DatabaseCommunicationEngineFactory {
      */
     public <T extends DatabaseCommunicationEngine> T newTextProtocolInstance(final SQLStatementContext<?> sqlStatementContext, final String sql, final BackendConnection<?> backendConnection) {
         ShardingSphereDatabase database = ProxyContext.getInstance().getDatabase(backendConnection.getConnectionSession().getDatabaseName());
-        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, sql, Collections.emptyList());
+        final String bgReplaceSql = SQLReplaceUtil.replace(sql);
+        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, bgReplaceSql, Collections.emptyList());
         T result;
         if (backendConnection instanceof JDBCBackendConnection) {
             JDBCBackendConnection jdbcBackendConnection = (JDBCBackendConnection) backendConnection;

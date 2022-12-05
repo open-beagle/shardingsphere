@@ -21,3 +21,5 @@ org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.OpenGaus
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.SQLServerSchemaMetaDataLoader
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.OracleSchemaMetaDataLoader
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.H2SchemaMetaDataLoader
+# by wuwanli
+org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.DMSchemaMetaDataLoader
