@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - main
+    - dev
 
 volumes:
   - name: docker
@@ -36,22 +36,26 @@ steps:
       proxy:
         from_secret: SOCKS5_PROXY
 
-  - name: patch
-    image: registry.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
-    commands:
-      - git apply .beagle/0001-sql-parse-mysql.patch
+#  - name: patch
+#    image: registry.cn-qingdao.aliyuncs.com/wod/devops-git:1.0
+#    commands:
+#      - git apply .beagle/0001-sql-parse-mysql.patch
 
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
+      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-common
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-test/shardingsphere-parser-test
-      - mvn clean install -Prelease       
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql
-      - mvn clean install -Prelease    
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
-      - mvn clean install -Prelease
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
-      - mvn clean install -Prelease
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
 
   - name: curl
@@ -72,7 +76,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '5.1.2'
+      version: '1.0.0'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -90,7 +94,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '5.1.2'
+      version: '1.0.0'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -103,8 +107,8 @@ steps:
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker-manifest:1.0
     settings:
       platforms: linux/amd64,linux/arm64
-      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-ARCH
-      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2
+      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.0-ARCH
+      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.0
       username:
         from_secret: REGISTRY_USER_ALIYUN
       password:
