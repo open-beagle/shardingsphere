@@ -69,11 +69,9 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     
     public MySQLComQueryPacketExecutor(final MySQLComQueryPacket packet, final ConnectionSession connectionSession) throws SQLException {
         DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
-        // 关键字替换 by wuwanli
-        final String packetSql = MySQLUtil.replaceKeyword(packet.getSql());
-        SQLStatement sqlStatement = parseSql(packetSql, databaseType);
-        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packetSql) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packetSql)
-                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packetSql, () -> Optional.of(sqlStatement), connectionSession);
+        SQLStatement sqlStatement = parseSql(packet.getSql(), databaseType);
+        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packet.getSql()) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packet.getSql())
+                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
         characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
     }
     

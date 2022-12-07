@@ -76,6 +76,7 @@ public final class FrontendChannelInboundHandler extends ChannelInboundHandlerAd
             authenticated = authenticate(context, (ByteBuf) message);
             return;
         }
+        // update by wuwanli
         ProxyStateContext.execute(context, SQLReplaceUtil.replace((ByteBuf)message), databaseProtocolFrontendEngine, connectionSession);
     }
     

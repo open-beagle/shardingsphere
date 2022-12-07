@@ -46,9 +46,17 @@ public class SQLReplaceUtil {
     public static ByteBuf replace(final ByteBuf message) {
         ByteBuf newMessage = message;
         try {
+            // 是否动态刷新
+            String isRefreshSql = System.getenv(REFLESH_SQL);
+            if ("true".equalsIgnoreCase(isRefreshSql)) {
+                BEFORE_REPLACE_SQL_MAP.clear();
+                BEFORE_REPLACE_STRING_MAP.clear();
+                parseFile();
+            }
             byte[] result = new byte[message.readableBytes()];
             message.readBytes(result);
-            String sql = SQLReplaceUtil.replace(new String(result, StandardCharsets.UTF_8));
+            final String originalSQL = new String(result, StandardCharsets.UTF_8);
+            String sql = SQLReplaceUtil.replace(originalSQL);
             newMessage = Unpooled.wrappedBuffer(sql.getBytes(StandardCharsets.UTF_8));
         } catch (Exception exception) {
             log.error("sql replace exception", exception);
@@ -88,13 +96,6 @@ public class SQLReplaceUtil {
         String changeSQL = originalSQL;
         log.debug("sql字符替换之前：" + changeSQL);
         try {
-            // 是否动态刷新
-            String isRefreshSql = System.getenv(REFLESH_SQL);
-            if ("true".equalsIgnoreCase(isRefreshSql)) {
-                BEFORE_REPLACE_SQL_MAP.clear();
-                BEFORE_REPLACE_STRING_MAP.clear();
-                parseFile();
-            }
             // 优先替换整个sql
             Set<String> sqlKeySet = BEFORE_REPLACE_SQL_MAP.keySet();
             for (String key : sqlKeySet) {
@@ -103,6 +104,10 @@ public class SQLReplaceUtil {
                     continue;
                 }
                 if (changeSQL.contains(decode(key))) {
+                    // 处理特殊字符串 buf转换需要用到
+                    if (changeSQL.length() > 2) {
+                        return changeSQL.substring(0, 2) + decode(value);
+                    }
                     return decode(value);
                 }
             }
@@ -120,7 +125,11 @@ public class SQLReplaceUtil {
             }
             // 删除最后sql 以;字符结尾
             changeSQL = changeSQL.replaceFirst(";$", "");
-            log.debug("sql字符替换之后：" + changeSQL);
+            if (originalSQL.equalsIgnoreCase(changeSQL)) {
+                log.debug("sql没有更改");
+            } else {
+                log.debug("sql字符替换之后：" + changeSQL);
+            }
         } catch (Exception exception) {
             log.error("sql replace exception:", exception);
         }
