@@ -94,7 +94,7 @@ public class SQLReplaceUtil {
 
     private static String replace(final String originalSQL) {
         String changeSQL = originalSQL;
-        log.debug("sql字符替换之前：" + changeSQL);
+        log.info("sql字符替换之前：" + changeSQL.substring(2));
         try {
             // 优先替换整个sql
             Set<String> sqlKeySet = BEFORE_REPLACE_SQL_MAP.keySet();
@@ -126,9 +126,9 @@ public class SQLReplaceUtil {
             // 删除最后sql 以;字符结尾
             changeSQL = changeSQL.replaceFirst(";$", "");
             if (originalSQL.equalsIgnoreCase(changeSQL)) {
-                log.debug("sql没有更改");
+                log.info("sql没有更改");
             } else {
-                log.debug("sql字符替换之后：" + changeSQL);
+                log.info("sql字符替换之后：" + changeSQL.substring(2));
             }
         } catch (Exception exception) {
             log.error("sql replace exception:", exception);
