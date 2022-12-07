@@ -34,6 +34,7 @@ import org.apache.shardingsphere.proxy.frontend.authentication.AuthenticationRes
 import org.apache.shardingsphere.proxy.frontend.executor.ConnectionThreadExecutorGroup;
 import org.apache.shardingsphere.proxy.frontend.spi.DatabaseProtocolFrontendEngine;
 import org.apache.shardingsphere.proxy.frontend.state.ProxyStateContext;
+import org.apache.shardingsphere.proxy.frontend.util.SQLReplaceUtil;
 import org.apache.shardingsphere.transaction.rule.TransactionRule;
 import org.apache.shardingsphere.transaction.rule.builder.DefaultTransactionRuleConfigurationBuilder;
 
@@ -75,7 +76,8 @@ public final class FrontendChannelInboundHandler extends ChannelInboundHandlerAd
             authenticated = authenticate(context, (ByteBuf) message);
             return;
         }
-        ProxyStateContext.execute(context, message, databaseProtocolFrontendEngine, connectionSession);
+        // update by wuwanli
+        ProxyStateContext.execute(context, SQLReplaceUtil.replace((ByteBuf)message), databaseProtocolFrontendEngine, connectionSession);
     }
     
     private boolean authenticate(final ChannelHandlerContext context, final ByteBuf message) {

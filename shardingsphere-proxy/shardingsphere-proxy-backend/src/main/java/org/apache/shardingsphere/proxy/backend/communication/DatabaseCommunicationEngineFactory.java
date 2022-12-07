@@ -29,7 +29,6 @@ import org.apache.shardingsphere.proxy.backend.communication.jdbc.connection.JDB
 import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxBackendConnection;
 import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxDatabaseCommunicationEngine;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
-import org.apache.shardingsphere.proxy.backend.util.SQLReplaceUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,8 +63,7 @@ public final class DatabaseCommunicationEngineFactory {
      */
     public <T extends DatabaseCommunicationEngine> T newTextProtocolInstance(final SQLStatementContext<?> sqlStatementContext, final String sql, final BackendConnection<?> backendConnection) {
         ShardingSphereDatabase database = ProxyContext.getInstance().getDatabase(backendConnection.getConnectionSession().getDatabaseName());
-        final String bgReplaceSql = SQLReplaceUtil.replace(sql);
-        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, bgReplaceSql, Collections.emptyList());
+        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, sql, Collections.emptyList());
         T result;
         if (backendConnection instanceof JDBCBackendConnection) {
             JDBCBackendConnection jdbcBackendConnection = (JDBCBackendConnection) backendConnection;
