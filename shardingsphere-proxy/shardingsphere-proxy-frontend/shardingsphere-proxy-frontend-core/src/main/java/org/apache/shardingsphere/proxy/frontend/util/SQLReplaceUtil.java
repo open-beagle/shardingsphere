@@ -35,8 +35,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class SQLReplaceUtil {
-    public static Map<String, String> BEFORE_REPLACE_STRING_MAP = new ConcurrentHashMap<>();
-    public static Map<String, String> BEFORE_REPLACE_SQL_MAP = new ConcurrentHashMap<>();
+    public static Map<String, String> REPLACE_STRING_MAP = new ConcurrentHashMap<>();
     public static final String REFLESH_SQL = "REFLESH_SQL";
     public static final String SQL_FILE_PATH = "SQL_FILE_PATH";
     static {
@@ -49,8 +48,7 @@ public class SQLReplaceUtil {
             // 是否动态刷新
             String isRefreshSql = System.getenv(REFLESH_SQL);
             if ("true".equalsIgnoreCase(isRefreshSql)) {
-                BEFORE_REPLACE_SQL_MAP.clear();
-                BEFORE_REPLACE_STRING_MAP.clear();
+                REPLACE_STRING_MAP.clear();
                 parseFile();
             }
             byte[] result = new byte[message.readableBytes()];
@@ -74,18 +72,9 @@ public class SQLReplaceUtil {
             ObjectMapper objectMapper = new ObjectMapper();
             ArrayNode arrayNode = (ArrayNode)objectMapper.readTree(new File(sqlFilePath));
             for (JsonNode jsonNode : arrayNode) {
-                String type = jsonNode.get("type").textValue();
-                ArrayNode mapList = (ArrayNode)jsonNode.get("list");
-                for (JsonNode jsonNode1 : mapList) {
-                    String key = jsonNode1.get("key").textValue();
-                    String value = jsonNode1.get("value").textValue();
-                    if ("string".equalsIgnoreCase(type)) {
-                        BEFORE_REPLACE_STRING_MAP.put(key, value);
-                    }
-                    if ("sql".equalsIgnoreCase(type)) {
-                        BEFORE_REPLACE_SQL_MAP.put(key, value);
-                    }
-                }
+                String key = jsonNode.get("key").textValue();
+                String value = jsonNode.get("value").textValue();
+                REPLACE_STRING_MAP.put(key, value);
             }
         } catch (Exception exception) {
             log.error("parseFile exception:", exception);
@@ -94,27 +83,11 @@ public class SQLReplaceUtil {
 
     private static String replace(final String originalSQL) {
         String changeSQL = originalSQL;
-        log.info("sql字符替换之前：" + changeSQL.substring(2));
+        log.info("sql字符替换之前：" + changeSQL);
         try {
-            // 优先替换整个sql
-            Set<String> sqlKeySet = BEFORE_REPLACE_SQL_MAP.keySet();
-            for (String key : sqlKeySet) {
-                String value = BEFORE_REPLACE_SQL_MAP.get(key);
-                if (StringUtils.isBlank(value)) {
-                    continue;
-                }
-                if (changeSQL.contains(decode(key))) {
-                    // 处理特殊字符串 buf转换需要用到
-                    if (changeSQL.length() > 2) {
-                        return changeSQL.substring(0, 2) + decode(value);
-                    }
-                    return decode(value);
-                }
-            }
-            // 其次替换字符
-            Set<String> stringKeySet = BEFORE_REPLACE_STRING_MAP.keySet();
-            for (String key : stringKeySet) {
-                String value = BEFORE_REPLACE_STRING_MAP.get(key);
+            Set<String> keySet = REPLACE_STRING_MAP.keySet();
+            for (String key : keySet) {
+                String value = REPLACE_STRING_MAP.get(key);
                 if (StringUtils.isBlank(value)) {
                     continue;
                 }
@@ -125,10 +98,10 @@ public class SQLReplaceUtil {
             }
             // 删除最后sql 以;字符结尾
             changeSQL = changeSQL.replaceFirst(";$", "");
-            if (originalSQL.equalsIgnoreCase(changeSQL)) {
+            if (originalSQL.equals(changeSQL)) {
                 log.info("sql没有更改");
             } else {
-                log.info("sql字符替换之后：" + changeSQL.substring(2));
+                log.info("sql字符替换之后：" + changeSQL);
             }
         } catch (Exception exception) {
             log.error("sql replace exception:", exception);
@@ -138,7 +111,7 @@ public class SQLReplaceUtil {
 
     /**
      * Base64 解码
-     * 
+     *
      * @param encodeStr 编码后字符
      * @return 解码后字符
      */
@@ -149,7 +122,7 @@ public class SQLReplaceUtil {
 
     /**
      * Base64 编码
-     * 
+     *
      * @param str 原始字符
      * @return 编码后字符
      */
