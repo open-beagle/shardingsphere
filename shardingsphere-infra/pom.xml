@@ -38,5 +38,6 @@
         <module>shardingsphere-infra-context</module>
         <module>shardingsphere-infra-datetime</module>
         <module>shardingsphere-infra-federation</module>
+        <module>shardingsphere-infra-replace</module>
     </modules>
 </project>

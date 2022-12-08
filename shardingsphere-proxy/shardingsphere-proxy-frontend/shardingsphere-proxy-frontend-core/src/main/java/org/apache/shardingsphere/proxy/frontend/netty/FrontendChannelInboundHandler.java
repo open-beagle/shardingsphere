@@ -18,6 +18,7 @@
 package org.apache.shardingsphere.proxy.frontend.netty;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -26,6 +27,8 @@ import org.apache.shardingsphere.db.protocol.CommonConstants;
 import org.apache.shardingsphere.db.protocol.payload.PacketPayload;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
 import org.apache.shardingsphere.infra.metadata.user.Grantee;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
 import org.apache.shardingsphere.proxy.backend.communication.jdbc.connection.JDBCBackendConnection;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
 import org.apache.shardingsphere.proxy.backend.exception.BackendConnectionException;
@@ -38,6 +41,7 @@ import org.apache.shardingsphere.proxy.frontend.util.SQLReplaceUtil;
 import org.apache.shardingsphere.transaction.rule.TransactionRule;
 import org.apache.shardingsphere.transaction.rule.builder.DefaultTransactionRuleConfigurationBuilder;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -76,8 +80,18 @@ public final class FrontendChannelInboundHandler extends ChannelInboundHandlerAd
             authenticated = authenticate(context, (ByteBuf) message);
             return;
         }
+
+        // SQL 替换  2022年12月8日 update by pengsong
+        ByteBuf messageBuf = (ByteBuf) message;
+        byte[] result = new byte[messageBuf.readableBytes()];
+        messageBuf.readBytes(result);
+        String rawSql = new String(result, StandardCharsets.UTF_8);
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, null);
+        ByteBuf newMessageBuf = Unpooled.wrappedBuffer(distSql.getBytes(StandardCharsets.UTF_8));
+        ProxyStateContext.execute(context, newMessageBuf, databaseProtocolFrontendEngine, connectionSession);
+
         // update by wuwanli
-        ProxyStateContext.execute(context, SQLReplaceUtil.replace((ByteBuf)message), databaseProtocolFrontendEngine, connectionSession);
+//        ProxyStateContext.execute(context, SQLReplaceUtil.replace((ByteBuf)message), databaseProtocolFrontendEngine, connectionSession);
     }
     
     private boolean authenticate(final ChannelHandlerContext context, final ByteBuf message) {

@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - dev
+    - dev-pengsong
 
 volumes:
   - name: docker
@@ -44,8 +44,14 @@ steps:
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
-      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-common
+      - cd $DRONE_WORKSPACE/shardingsphere-infra
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+#      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-replace
+#      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+#      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-executor
+#      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+#      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-common
+#      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-test/shardingsphere-parser-test
@@ -76,7 +82,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '1.0.0'
+      version: '1.0.1'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -94,7 +100,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '1.0.0'
+      version: '1.0.1'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -108,7 +114,7 @@ steps:
     settings:
       platforms: linux/amd64,linux/arm64
       template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.0-ARCH
-      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.0
+      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.1
       username:
         from_secret: REGISTRY_USER_ALIYUN
       password:
