@@ -11,7 +11,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package org.apache.shardingsphere.proxy.frontend.util;
+package org.apache.shardingsphere.proxy.backend.util;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -35,31 +35,37 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class SQLReplaceUtil {
-    public static Map<String, String> REPLACE_STRING_MAP = new ConcurrentHashMap<>();
+    public static Map<String, String> FRONTEND_SQL_MAP = new ConcurrentHashMap<>();
+    public static Map<String, String> BACKEND_SQL_MAP = new ConcurrentHashMap<>();
     public static final String REFLESH_SQL = "REFLESH_SQL";
     public static final String SQL_FILE_PATH = "SQL_FILE_PATH";
     static {
         SQLReplaceUtil.parseFile();
     }
 
-    public static ByteBuf replace(final ByteBuf message) {
+    public static ByteBuf replaceFrontend(final ByteBuf message) {
         ByteBuf newMessage = message;
         try {
             // 是否动态刷新
             String isRefreshSql = System.getenv(REFLESH_SQL);
-            if ("true".equalsIgnoreCase(isRefreshSql)) {
-                REPLACE_STRING_MAP.clear();
+            if (Boolean.TRUE.toString().equalsIgnoreCase(isRefreshSql)) {
+                FRONTEND_SQL_MAP.clear();
+                BACKEND_SQL_MAP.clear();
                 parseFile();
             }
             byte[] result = new byte[message.readableBytes()];
             message.readBytes(result);
             final String originalSQL = new String(result, StandardCharsets.UTF_8);
-            String sql = SQLReplaceUtil.replace(originalSQL);
+            String sql = SQLReplaceUtil.replace(originalSQL, FRONTEND_SQL_MAP);
             newMessage = Unpooled.wrappedBuffer(sql.getBytes(StandardCharsets.UTF_8));
         } catch (Exception exception) {
             log.error("sql replace exception", exception);
         }
         return newMessage;
+    }
+
+    public static String replaceBackend(final String originalSQL) {
+        return SQLReplaceUtil.replace(originalSQL, BACKEND_SQL_MAP);
     }
 
     // 初次加载json 到map里头
@@ -70,24 +76,31 @@ public class SQLReplaceUtil {
                 return;
             }
             ObjectMapper objectMapper = new ObjectMapper();
-            ArrayNode arrayNode = (ArrayNode)objectMapper.readTree(new File(sqlFilePath));
-            for (JsonNode jsonNode : arrayNode) {
-                String key = jsonNode.get("key").textValue();
-                String value = jsonNode.get("value").textValue();
-                REPLACE_STRING_MAP.put(key, value);
+            JsonNode jsonNode = objectMapper.readTree(new File(sqlFilePath));
+            ArrayNode frontendArrayNode = (ArrayNode)jsonNode.get("frontend");
+            for (JsonNode frontendNode : frontendArrayNode) {
+                String key = frontendNode.get("key").textValue();
+                String value = frontendNode.get("value").textValue();
+                FRONTEND_SQL_MAP.put(key, value);
+            }
+            ArrayNode backendArrayNode = (ArrayNode)jsonNode.get("backend");
+            for (JsonNode backendNode : backendArrayNode) {
+                String key = backendNode.get("key").textValue();
+                String value = backendNode.get("value").textValue();
+                BACKEND_SQL_MAP.put(key, value);
             }
         } catch (Exception exception) {
             log.error("parseFile exception:", exception);
         }
     }
 
-    private static String replace(final String originalSQL) {
+    private static String replace(final String originalSQL, Map<String, String> sqlMap) {
         String changeSQL = originalSQL;
         log.info("sql字符替换之前：" + changeSQL);
         try {
-            Set<String> keySet = REPLACE_STRING_MAP.keySet();
+            Set<String> keySet = sqlMap.keySet();
             for (String key : keySet) {
-                String value = REPLACE_STRING_MAP.get(key);
+                String value = sqlMap.get(key);
                 if (StringUtils.isBlank(value)) {
                     continue;
                 }
@@ -131,7 +144,7 @@ public class SQLReplaceUtil {
     }
 
     public static void main(String[] args) {
-        String str = "\"country code\"";
+        String str = "";
         System.out.println(SQLReplaceUtil.encode(str));
     }
 }
