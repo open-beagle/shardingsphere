@@ -44,9 +44,7 @@ steps:
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
-      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-replace
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
-      - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-common
+      - cd $DRONE_WORKSPACE/shardingsphere-infra
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
