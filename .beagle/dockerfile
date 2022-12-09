@@ -7,8 +7,7 @@ ARG VERSION
 
 LABEL maintainer=${AUTHOR} version=${VERSION}
 
-ENV LOCAL_PATH=/opt/shardingsphere-proxy \
-    IS_DOCKER=true
+ENV LOCAL_PATH /opt/shardingsphere-proxy
 
 COPY shardingsphere-distribution/shardingsphere-proxy-distribution/target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin/ ${LOCAL_PATH}/
 
