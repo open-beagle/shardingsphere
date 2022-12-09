@@ -80,7 +80,7 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         Map<String, Collection<ColumnMetaData>> result = new HashMap<>(tables.size(), 1);
         try (PreparedStatement preparedStatement = connection.prepareStatement(getTableMetaDataSQL(tables, connection.getMetaData()))) {
             Map<String, Integer> dataTypes = DataTypeLoader.load(connection.getMetaData());
-            appendNumberDataType(dataTypes);
+            appendDataType(dataTypes);
             Map<String, Collection<String>> tablePrimaryKeys = loadTablePrimaryKeys(connection, tables);
             preparedStatement.setString(1, connection.getSchema());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -97,8 +97,10 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         return result;
     }
     
-    private void appendNumberDataType(final Map<String, Integer> dataTypes) {
-        dataTypes.put("NUMBER", Types.NUMERIC);
+    private void appendDataType(final Map<String, Integer> dataTypes) {
+        dataTypes.put("TEXT", Types.LONGVARCHAR);
+        dataTypes.put("DOUBLE PRECISION", Types.DOUBLE);
+        dataTypes.put("IMAGE", Types.LONGVARBINARY);
     }
     
     private ColumnMetaData loadColumnMetaData(final Map<String, Integer> dataTypeMap, final ResultSet resultSet, final Collection<String> primaryKeys,
