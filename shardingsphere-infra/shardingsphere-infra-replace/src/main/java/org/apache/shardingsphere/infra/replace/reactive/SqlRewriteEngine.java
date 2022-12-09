@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class SqlRewriteEngine implements SqlReplace {
     
-    private static final String INSTANCE_ENV_KEY = "instanceId";
+    private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
     
     private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
