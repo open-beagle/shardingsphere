@@ -18,6 +18,7 @@
 package org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect;
 
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.metadata.database.schema.loader.common.DataTypeLoader;
 import org.apache.shardingsphere.infra.metadata.database.schema.loader.model.ColumnMetaData;
 import org.apache.shardingsphere.infra.metadata.database.schema.loader.model.IndexMetaData;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Schema meta data loader for DM. by wuwanli
  */
+@Slf4j
 public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader {
     
     private static final String TABLE_META_DATA_SQL_NO_ORDER = "SELECT OWNER AS TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE, COLUMN_ID %s FROM ALL_TAB_COLUMNS WHERE OWNER = ?";
@@ -97,16 +99,22 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         return result;
     }
     
+    // add by wuwanli debug
     private void appendDataType(final Map<String, Integer> dataTypes) {
         dataTypes.put("TEXT", Types.LONGVARCHAR);
         dataTypes.put("DOUBLE PRECISION", Types.DOUBLE);
         dataTypes.put("IMAGE", Types.LONGVARBINARY);
+        dataTypes.put("DEC", Types.DECIMAL);
     }
     
     private ColumnMetaData loadColumnMetaData(final Map<String, Integer> dataTypeMap, final ResultSet resultSet, final Collection<String> primaryKeys,
                                               final DatabaseMetaData databaseMetaData) throws SQLException {
         String columnName = resultSet.getString("COLUMN_NAME");
         String dataType = getOriginalDataType(resultSet.getString("DATA_TYPE"));
+        if (dataTypeMap.get(dataType) == null) {
+            // add by wuwanli debug
+            log.error("dataType not exist! dataType=" + dataType);
+        }
         boolean primaryKey = primaryKeys.contains(columnName);
         boolean generated = versionContainsIdentityColumn(databaseMetaData) && "YES".equals(resultSet.getString("IDENTITY_COLUMN"));
         // TODO need to support caseSensitive when version < 12.2.
