@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JetcdClientFactory {
     
-    public static final String ETCD_URI = "ETCD-URIS";
+    public static final String ETCD_URI = "SQL_RULE_ETCD_URIS";
     
     private static JetcdClientFactory instance = null;
     
