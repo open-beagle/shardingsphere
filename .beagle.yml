@@ -45,19 +45,19 @@ steps:
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
       - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-replace
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-infra/shardingsphere-infra-common
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-test/shardingsphere-parser-test
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
-      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
 
   - name: curl
