@@ -67,11 +67,11 @@ public final class DatabaseCommunicationEngineFactory {
         ShardingSphereDatabase database = ProxyContext.getInstance().getDatabase(backendConnection.getConnectionSession().getDatabaseName());
         
         // SQL 替换 2022年12月8日 update by pengsong
-        String rawSql = sql;
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, null);
-        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, distSql, Collections.emptyList());
+//        String rawSql = sql;
+//        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, rawSql, null);
+//        LogicSQL logicSQL = new LogicSQL(sqlStatementContext, distSql, Collections.emptyList());
         
-        // LogicSQL logicSQL = new LogicSQL(sqlStatementContext, sql, Collections.emptyList());
+         LogicSQL logicSQL = new LogicSQL(sqlStatementContext, sql, Collections.emptyList());
         T result;
         if (backendConnection instanceof JDBCBackendConnection) {
             JDBCBackendConnection jdbcBackendConnection = (JDBCBackendConnection) backendConnection;
