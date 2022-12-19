@@ -64,7 +64,7 @@ public final class SubqueryExtractUtil {
         extractSubquerySegmentsFromProjections(result, selectStatement.getProjections());
         extractSubquerySegmentsFromTableSegment(result, selectStatement.getFrom());
         //union中的
-        extractUnionSubquerySegmentsFromProjections(result,selectStatement.getUnionSegments());
+//        extractUnionSubquerySegmentsFromProjections(result,selectStatement.getUnionSegments());
 
         if (selectStatement.getWhere().isPresent()) {
             extractSubquerySegmentsFromExpression(result, selectStatement.getWhere().get().getExpr());
