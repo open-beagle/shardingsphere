@@ -31,6 +31,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.expr.subquery
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.item.ProjectionSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.item.ProjectionsSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.item.SubqueryProjectionSegment;
+import org.apache.shardingsphere.sql.parser.sql.common.segment.dml.union.UnionSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.JoinTableSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.SubqueryTableSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.TableSegment;
@@ -45,7 +46,7 @@ import java.util.List;
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SubqueryExtractUtil {
-    
+
     /**
      * Get subquery segment from SelectStatement.
      *
@@ -57,15 +58,35 @@ public final class SubqueryExtractUtil {
         extractSubquerySegments(result, selectStatement);
         return result;
     }
-    
+
     private static void extractSubquerySegments(final List<SubquerySegment> result, final SelectStatement selectStatement) {
+        // TODO 1UNION  中关联查询的subquery没有进行处理
         extractSubquerySegmentsFromProjections(result, selectStatement.getProjections());
         extractSubquerySegmentsFromTableSegment(result, selectStatement.getFrom());
+        //union中的
+        extractUnionSubquerySegmentsFromProjections(result,selectStatement.getUnionSegments());
+
         if (selectStatement.getWhere().isPresent()) {
             extractSubquerySegmentsFromExpression(result, selectStatement.getWhere().get().getExpr());
         }
     }
-    
+
+    /**
+     * reset union conditions by yanguohua 2022/12/16
+     * @param result
+     * @param unionSegments
+     */
+    private static void extractUnionSubquerySegmentsFromProjections(final List<SubquerySegment> result, final Collection<UnionSegment> unionSegments) {
+        if (null == unionSegments || unionSegments.isEmpty()) {
+            return;
+        }
+        unionSegments.forEach(unionSegment -> {
+            SelectStatement selectStatement = unionSegment.getSelectStatement();
+            extractSubquerySegments(result,selectStatement);
+
+        });
+
+    }
     private static void extractSubquerySegmentsFromProjections(final List<SubquerySegment> result, final ProjectionsSegment projections) {
         if (null == projections || projections.getProjections().isEmpty()) {
             return;
@@ -80,7 +101,7 @@ public final class SubqueryExtractUtil {
             extractSubquerySegments(result, subquery.getSelect());
         }
     }
-    
+
     private static void extractSubquerySegmentsFromTableSegment(final List<SubquerySegment> result, final TableSegment tableSegment) {
         if (null == tableSegment) {
             return;
@@ -96,7 +117,7 @@ public final class SubqueryExtractUtil {
             extractSubquerySegmentsFromTableSegment(result, ((JoinTableSegment) tableSegment).getRight());
         }
     }
-    
+
     private static void extractSubquerySegmentsFromExpression(final List<SubquerySegment> result, final ExpressionSegment expressionSegment) {
         if (expressionSegment instanceof SubqueryExpressionSegment) {
             SubquerySegment subquery = ((SubqueryExpressionSegment) expressionSegment).getSubquery();
