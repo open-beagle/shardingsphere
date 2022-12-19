@@ -32,6 +32,7 @@ import org.apache.shardingsphere.infra.executor.sql.process.ExecuteProcessEngine
 import org.apache.shardingsphere.infra.executor.sql.process.model.ExecuteProcessConstants;
 import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
 
 import java.sql.DatabaseMetaData;
@@ -86,9 +87,13 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             SQLUnit sqlUnit = jdbcExecutionUnit.getExecutionUnit().getSqlUnit();
             sqlExecutionHook.start(jdbcExecutionUnit.getExecutionUnit().getDataSourceName(), sqlUnit.getSql(), sqlUnit.getParameters(), dataSourceMetaData, isTrunkThread, dataMap);
 
+            String rawSql = sqlUnit.getSql();
+            // 后向SQL替换 2022年12月19日 update by pengsong
+            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
+
             // SQL 重写 2022年12月8日 update by pengsong
-            String disSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, sqlUnit.getSql(), jdbcExecutionUnit.getStorageResource());
-            T result = executeSQL(disSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getStorageResource());
+            T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
 //            T result = executeSQL(sqlUnit.getSql(), jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
             sqlExecutionHook.finishSuccess();

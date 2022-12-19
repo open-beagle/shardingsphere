@@ -15,45 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.infra.replace.model;
+package org.apache.shardingsphere.infra.replace.dict;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
- * SQL字符转换
+ * SQL字符替换触发类型
  * @author SmileCircle
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class SqlConvert extends Base {
-    
+public enum SQLStrReplaceTriggerModeEnum {
+
     /**
-     * ID
+     * 前向替换
      */
-    private String id;
+    FRONT_END("frontend", "前向替换"),
     /**
-     * 实例ID
+     * 后向替换
      */
-    private String instanceId;
+    BACK_END("backend", "后向替换");
+
     /**
-     * 转换规则名称
+     * 编码
      */
-    private String name;
+    @Getter
+    private final String code;
     /**
-     * 转换规则描述
+     * 名称
      */
-    private String desc;
-    /**
-     * 原字符串
-     */
-    private String raw;
-    /**
-     * 目标字符串
-     */
-    private String dist;
-    /**
-     * 触发模式 北向 - frontend 南向 - backend
-     */
-    private String triggerMode;
+    @Getter
+    private final String name;
+
+    SQLStrReplaceTriggerModeEnum(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 }

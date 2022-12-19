@@ -24,6 +24,7 @@ import io.etcd.jetcd.options.GetOption;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.replace.SqlReplace;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.infra.replace.model.SqlConvert;
 import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
 import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
@@ -47,7 +48,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
 
     @Override
     public String replace(String sql, Object obj) {
-        return replaceSql(sql);
+        return replaceSql(sql, (SQLStrReplaceTriggerModeEnum) obj);
     }
     
     @Override
@@ -60,9 +61,9 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * @param sql
      * @return
      */
-    private static String replaceSql(String sql) {
+    private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
-            List<SqlConvert> sqlConvert = getSqlConvert();
+            List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
             Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist));
             if (replaceMap.size() > 0) {
                 for (Map.Entry<String, String> ruleSet : replaceMap.entrySet()) {
@@ -82,7 +83,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * 获取SQL转换规则
      * @return
      */
-    private static List<SqlConvert> getSqlConvert() {
+    private static List<SqlConvert> getSqlConvert(SQLStrReplaceTriggerModeEnum triggerMode) {
         List<SqlConvert> result = new ArrayList<>();
         GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_CONVERT, StandardCharsets.UTF_8)).build();
         GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_CONVERT, getOption);
@@ -90,7 +91,9 @@ public class SqlStrReplaceEngine implements SqlReplace {
             response.getKvs().forEach(item -> {
                 SqlConvert convert = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlConvert.class);
                 if (Objects.equals(convert.getInstanceId(), SqlStrReplaceEngine.INSTANCE_ID)) {
-                    result.add(convert);
+                    if(Objects.nonNull(triggerMode) && Objects.equals(triggerMode.getCode(), convert.getTriggerMode())) {
+                        result.add(convert);
+                    }
                 }
             });
         }
