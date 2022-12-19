@@ -53,7 +53,7 @@ steps:
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-dialect/shardingsphere-sql-parser-mysql
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-sql-parser/shardingsphere-sql-parser-statement
-        - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
+      - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-proxy
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
