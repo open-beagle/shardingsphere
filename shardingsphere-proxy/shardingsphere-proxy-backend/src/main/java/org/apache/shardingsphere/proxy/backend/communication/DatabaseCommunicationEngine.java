@@ -155,7 +155,10 @@ public abstract class DatabaseCommunicationEngine<T> {
     }
     
     protected boolean hasSelectExpandProjections(final SQLStatementContext<?> sqlStatementContext) {
-        return sqlStatementContext instanceof SelectStatementContext && !((SelectStatementContext) sqlStatementContext).getProjectionsContext().getExpandProjections().isEmpty();
+        //bug描述：类似 select s.X中 ExpandProjections().size()中并未包括s.X的数量，导致查询的数据缺失列
+        //处理by yanguohua 2022/12/20： 注释掉原逻辑，从MetaData().getColumnCount()中返回要查询的总列数去解析QueryHeader，再去backend库中查询具体字段列
+//        return sqlStatementContext instanceof SelectStatementContext && !((SelectStatementContext) sqlStatementContext).getProjectionsContext().getExpandProjections().isEmpty();
+        return false;
     }
     
     protected MergedResult mergeQuery(final SQLStatementContext<?> sqlStatementContext, final List<QueryResult> queryResults) throws SQLException {
