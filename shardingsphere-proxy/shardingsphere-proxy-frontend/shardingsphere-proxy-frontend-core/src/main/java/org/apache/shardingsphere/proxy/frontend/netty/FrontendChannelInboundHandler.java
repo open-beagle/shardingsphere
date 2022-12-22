@@ -19,6 +19,8 @@ package org.apache.shardingsphere.proxy.frontend.netty;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledByteBufAllocator;
+import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -42,6 +44,7 @@ import org.apache.shardingsphere.transaction.rule.TransactionRule;
 import org.apache.shardingsphere.transaction.rule.builder.DefaultTransactionRuleConfigurationBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -82,13 +85,31 @@ public final class FrontendChannelInboundHandler extends ChannelInboundHandlerAd
         }
 
         // 前向SQL 替换  2022年12月8日 update by pengsong
-        ByteBuf messageBuf = (ByteBuf) message;
-        byte[] result = new byte[messageBuf.readableBytes()];
-        messageBuf.readBytes(result);
-        String rawSql = new String(result, StandardCharsets.UTF_8);
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
-        ByteBuf newMessageBuf = Unpooled.wrappedBuffer(distSql.getBytes(StandardCharsets.UTF_8));
-        ProxyStateContext.execute(context, newMessageBuf, databaseProtocolFrontendEngine, connectionSession);
+        String sqlType = databaseProtocolFrontendEngine.getType();
+        if(Objects.equals(sqlType, "MySQL")) {
+            ByteBuf messageBuf = (ByteBuf) message;
+            byte[] result = new byte[messageBuf.readableBytes()];
+            messageBuf.readBytes(result);
+            String rawSql = new String(result, StandardCharsets.UTF_8);
+            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+            ByteBuf newMessageBuf = Unpooled.wrappedBuffer(distSql.getBytes(StandardCharsets.UTF_8));
+            ProxyStateContext.execute(context, newMessageBuf, databaseProtocolFrontendEngine, connectionSession);
+        } else if(Objects.equals(sqlType, "PostgreSQL")) {
+            // PG协议 开头4位int 是数据包类型编码 + SQL + 0结尾
+            ByteBuf messageBuf = (ByteBuf) message;
+            int number = messageBuf.readInt();
+            String rawSql = messageBuf.readCharSequence(messageBuf.bytesBefore((byte) 0), StandardCharsets.UTF_8).toString();
+            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+            byte[] bytes = distSql.getBytes(StandardCharsets.UTF_8);
+            UnpooledByteBufAllocator byteBufAllocator = UnpooledByteBufAllocator.DEFAULT;
+            UnpooledHeapByteBuf newMessageBuf = new UnpooledHeapByteBuf(byteBufAllocator, bytes.length, bytes.length + 5);
+            newMessageBuf.writeInt(number);
+            newMessageBuf.writeCharSequence(distSql, StandardCharsets.ISO_8859_1);
+            newMessageBuf.writeByte(0);
+            ProxyStateContext.execute(context, newMessageBuf, databaseProtocolFrontendEngine, connectionSession);
+        } else {
+            ProxyStateContext.execute(context, message, databaseProtocolFrontendEngine, connectionSession);
+        }
 
         // update by wuwanli
 //        ProxyStateContext.execute(context, SQLReplaceUtil.replace((ByteBuf)message), databaseProtocolFrontendEngine, connectionSession);

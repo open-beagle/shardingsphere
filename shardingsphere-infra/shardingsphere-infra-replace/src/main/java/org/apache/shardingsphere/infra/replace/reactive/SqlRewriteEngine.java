@@ -79,7 +79,7 @@ public class SqlRewriteEngine implements SqlReplace {
                 String connectionUrl = storageResource.getConnection().getMetaData().getURL();
                 List<SqlRewrite> rewriteList = getSqlReWrite(connectionUrl);
                 if (rewriteList.size() > 0) {
-                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql));
+                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
                     if (rewriteMap.size() > 0) {
                         for (Map.Entry<String, String> ruleSet : rewriteMap.entrySet()) {
                             String distSql = reWriteSql(ruleSet.getKey(), ruleSet.getValue(), sql);

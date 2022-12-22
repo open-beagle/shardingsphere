@@ -64,7 +64,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
-            Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist));
+            Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist, (o1, o2) -> o2));
             if (replaceMap.size() > 0) {
                 for (Map.Entry<String, String> ruleSet : replaceMap.entrySet()) {
                     sql = replace(ruleSet.getKey(), ruleSet.getValue(), sql);
