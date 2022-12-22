@@ -26,6 +26,9 @@ import org.apache.shardingsphere.db.protocol.postgresql.packet.command.query.ext
 import org.apache.shardingsphere.db.protocol.postgresql.packet.command.query.extended.parse.PostgreSQLParseCompletePacket;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.parser.ShardingSphereSQLParserEngine;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.mode.metadata.MetaDataContexts;
 import org.apache.shardingsphere.parser.rule.SQLParserRule;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
@@ -57,16 +60,29 @@ public final class PostgreSQLComParseExecutor implements CommandExecutor {
     
     @Override
     public Collection<DatabasePacket<?>> execute() {
+        // 前向SQL 替换  2022年12月22日 update by pengsong
+        String rawSql = packet.getSql();
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
         ShardingSphereSQLParserEngine sqlParserEngine = null;
-        String sql = packet.getSql();
-        SQLStatement sqlStatement = sql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(sql, true);
+        SQLStatement sqlStatement = distSql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(distSql, true);
         if (sqlStatement.getParameterCount() > 0) {
-            sql = convertSQLToJDBCStyle(sqlStatement, sql);
-            sqlStatement = sqlParserEngine.parse(sql, true);
+            distSql = convertSQLToJDBCStyle(sqlStatement, distSql);
+            sqlStatement = sqlParserEngine.parse(distSql, true);
         }
         List<PostgreSQLColumnType> paddedColumnTypes = paddingColumnTypes(sqlStatement.getParameterCount(), packet.readParameterTypes());
-        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), sql, sqlStatement, paddedColumnTypes);
+        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), distSql, sqlStatement, paddedColumnTypes);
         return Collections.singletonList(PostgreSQLParseCompletePacket.getInstance());
+
+//        ShardingSphereSQLParserEngine sqlParserEngine = null;
+//        String sql = packet.getSql();
+//        SQLStatement sqlStatement = sql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(sql, true);
+//        if (sqlStatement.getParameterCount() > 0) {
+//            sql = convertSQLToJDBCStyle(sqlStatement, sql);
+//            sqlStatement = sqlParserEngine.parse(sql, true);
+//        }
+//        List<PostgreSQLColumnType> paddedColumnTypes = paddingColumnTypes(sqlStatement.getParameterCount(), packet.readParameterTypes());
+//        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), sql, sqlStatement, paddedColumnTypes);
+//        return Collections.singletonList(PostgreSQLParseCompletePacket.getInstance());
     }
     
     private ShardingSphereSQLParserEngine createShardingSphereSQLParserEngine(final String databaseName) {

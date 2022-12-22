@@ -28,6 +28,9 @@ import org.apache.shardingsphere.db.protocol.postgresql.packet.command.query.sim
 import org.apache.shardingsphere.db.protocol.postgresql.packet.generic.PostgreSQLCommandCompletePacket;
 import org.apache.shardingsphere.db.protocol.postgresql.packet.handshake.PostgreSQLParameterStatusPacket;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.proxy.backend.response.header.ResponseHeader;
 import org.apache.shardingsphere.proxy.backend.response.header.query.QueryHeader;
 import org.apache.shardingsphere.proxy.backend.response.header.query.QueryResponseHeader;
@@ -67,8 +70,14 @@ public final class PostgreSQLComQueryExecutor implements QueryCommandExecutor {
     public PostgreSQLComQueryExecutor(final PostgreSQLConnectionContext connectionContext, final PostgreSQLComQueryPacket comQueryPacket,
                                       final ConnectionSession connectionSession) throws SQLException {
         this.connectionContext = connectionContext;
+        // 前向SQL 替换  2022年12月22日 update by pengsong
+        String rawSql = comQueryPacket.getSql();
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
         textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("PostgreSQL"),
-                comQueryPacket.getSql(), Optional::empty, connectionSession);
+                distSql, Optional::empty, connectionSession);
+
+//        textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("PostgreSQL"),
+//                comQueryPacket.getSql(), Optional::empty, connectionSession);
     }
     
     @Override

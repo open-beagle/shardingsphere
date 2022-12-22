@@ -30,6 +30,9 @@ import org.apache.shardingsphere.db.protocol.mysql.packet.generic.MySQLOKPacket;
 import org.apache.shardingsphere.db.protocol.packet.DatabasePacket;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.mode.metadata.MetaDataContexts;
 import org.apache.shardingsphere.parser.rule.SQLParserRule;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
@@ -48,6 +51,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.DeleteState
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.EmptyStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.UpdateStatement;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,11 +72,21 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     private int currentSequenceId;
     
     public MySQLComQueryPacketExecutor(final MySQLComQueryPacket packet, final ConnectionSession connectionSession) throws SQLException {
+
+        // 前向SQL 替换  2022年12月22日 update by pengsong
+        String rawSql = packet.getSql();
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
         DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
-        SQLStatement sqlStatement = parseSql(packet.getSql(), databaseType);
-        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packet.getSql()) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packet.getSql())
-                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
+        SQLStatement sqlStatement = parseSql(distSql, databaseType);
+        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, distSql) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, distSql)
+                : TextProtocolBackendHandlerFactory.newInstance(databaseType,distSql, () -> Optional.of(sqlStatement), connectionSession);
         characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
+
+//        DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
+//        SQLStatement sqlStatement = parseSql(packet.getSql(), databaseType);
+//        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packet.getSql()) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packet.getSql())
+//                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
+//        characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
     }
     
     private SQLStatement parseSql(final String sql, final DatabaseType databaseType) {
