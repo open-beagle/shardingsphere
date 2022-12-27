@@ -80,7 +80,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '1.0.1'
+      version: '1.0.2'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -98,7 +98,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/awecloud-dbproxy
-      version: '1.0.1'
+      version: '1.0.2'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
