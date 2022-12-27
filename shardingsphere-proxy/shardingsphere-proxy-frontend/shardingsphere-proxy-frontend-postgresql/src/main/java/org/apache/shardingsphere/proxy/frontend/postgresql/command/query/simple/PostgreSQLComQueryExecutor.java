@@ -70,14 +70,8 @@ public final class PostgreSQLComQueryExecutor implements QueryCommandExecutor {
     public PostgreSQLComQueryExecutor(final PostgreSQLConnectionContext connectionContext, final PostgreSQLComQueryPacket comQueryPacket,
                                       final ConnectionSession connectionSession) throws SQLException {
         this.connectionContext = connectionContext;
-        // 前向SQL 替换  2022年12月22日 update by pengsong
-        String rawSql = comQueryPacket.getSql();
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
         textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("PostgreSQL"),
-                distSql, Optional::empty, connectionSession);
-
-//        textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("PostgreSQL"),
-//                comQueryPacket.getSql(), Optional::empty, connectionSession);
+                comQueryPacket.getSql(), Optional::empty, connectionSession);
     }
     
     @Override

@@ -45,5 +45,10 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-infra-replace</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

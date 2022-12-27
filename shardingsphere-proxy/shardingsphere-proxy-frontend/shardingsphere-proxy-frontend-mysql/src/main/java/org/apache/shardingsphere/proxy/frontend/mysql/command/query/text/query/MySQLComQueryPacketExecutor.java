@@ -72,21 +72,11 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     private int currentSequenceId;
     
     public MySQLComQueryPacketExecutor(final MySQLComQueryPacket packet, final ConnectionSession connectionSession) throws SQLException {
-
-        // 前向SQL 替换  2022年12月22日 update by pengsong
-        String rawSql = packet.getSql();
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
         DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
-        SQLStatement sqlStatement = parseSql(distSql, databaseType);
-        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, distSql) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, distSql)
-                : TextProtocolBackendHandlerFactory.newInstance(databaseType,distSql, () -> Optional.of(sqlStatement), connectionSession);
+        SQLStatement sqlStatement = parseSql(packet.getSql(), databaseType);
+        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packet.getSql()) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packet.getSql())
+                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
         characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
-
-//        DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
-//        SQLStatement sqlStatement = parseSql(packet.getSql(), databaseType);
-//        textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, packet.getSql()) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, packet.getSql())
-//                : TextProtocolBackendHandlerFactory.newInstance(databaseType,packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
-//        characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
     }
     
     private SQLStatement parseSql(final String sql, final DatabaseType databaseType) {
