@@ -1879,10 +1879,6 @@ RANGE
     : R A N G E
     ;
 
-RANK
-    : R A N K
-    ;
-
 READ
     : R E A D
     ;
