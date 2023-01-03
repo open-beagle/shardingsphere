@@ -79,8 +79,8 @@ steps:
     settings:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
-      repo: wod/awecloud-dbproxy
-      version: '1.0.1'
+      repo: wod/beagle-xc-dbproxy
+      version: '5.1.2'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -97,8 +97,8 @@ steps:
     settings:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
-      repo: wod/awecloud-dbproxy
-      version: '1.0.1'
+      repo: wod/beagle-xc-dbproxy
+      version: '5.1.2'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -111,8 +111,8 @@ steps:
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker-manifest:1.0
     settings:
       platforms: linux/amd64,linux/arm64
-      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.0-ARCH
-      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:1.0.1
+      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-ARCH
+      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2
       username:
         from_secret: REGISTRY_USER_ALIYUN
       password:
