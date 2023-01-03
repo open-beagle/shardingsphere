@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-SERVER_NAME=beagle-xc-dbproxy
+SERVER_NAME=ShardingSphere-Proxy
 
 cd `dirname $0`
 cd ..
