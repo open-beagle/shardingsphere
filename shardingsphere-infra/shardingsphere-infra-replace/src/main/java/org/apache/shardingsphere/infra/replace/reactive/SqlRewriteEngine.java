@@ -34,10 +34,7 @@ import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -134,9 +131,9 @@ public class SqlRewriteEngine implements SqlReplace {
      * @return
      */
     private static String reWriteSql(String rawSql, String distSql, String sourceSql) {
-        String rawTrim = StringUtil.trimAllWhitespace(rawSql);
+        String rawTrim = StringUtil.trimAllWhitespace(rawSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的模板: -> {}", rawTrim);
-        String tempTrim = StringUtil.trimAllWhitespace(sourceSql);
+        String tempTrim = StringUtil.trimAllWhitespace(sourceSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的SQL: -> {}", tempTrim);
         boolean matches;
         boolean isHaveParam;
