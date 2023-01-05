@@ -84,14 +84,12 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             SQLUnit sqlUnit = jdbcExecutionUnit.getExecutionUnit().getSqlUnit();
             sqlExecutionHook.start(jdbcExecutionUnit.getExecutionUnit().getDataSourceName(), sqlUnit.getSql(), sqlUnit.getParameters(), dataSourceMetaData, isTrunkThread, dataMap);
 
+            // SQL 重写 2023年1月5日 update by pengsong
             String rawSql = sqlUnit.getSql();
-
-            // SQL 重写 2022年12月8日 update by pengsong
-            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, rawSql, jdbcExecutionUnit.getStorageResource());
-            if(Objects.equals(rawSql, distSql)) {
-                // 后向SQL替换 2022年12月19日 update by pengsong
-                distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
-            }
+            // 先进行字符替换
+            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
+            // 再进行SQL重写
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getStorageResource());
 
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
