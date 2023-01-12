@@ -111,9 +111,9 @@ public class SqlRewriteEngine implements SqlReplace {
                     if (Objects.nonNull(rewrite.getSouthDatabaseId())) {
                         SouthDatabase southDatabase = JetcdClientUtil.getSingleObject(EtcdKey.SQL_SOUTH_DATABASE + rewrite.getSouthDatabaseId(), SouthDatabase.class);
                         if (Objects.nonNull(southDatabase) &&
-                                Objects.equals(southDatabase.getHost(), dbInfo.getHost()) &&
-                                Objects.equals(southDatabase.getPort(), dbInfo.getPort()) &&
-                                Objects.equals(southDatabase.getName(), dbInfo.getName())) {
+                                StringUtils.equalsIgnoreCase(southDatabase.getHost(), dbInfo.getHost()) &&
+                                StringUtils.equalsIgnoreCase(southDatabase.getPort(), dbInfo.getPort()) &&
+                                StringUtils.equalsIgnoreCase(southDatabase.getName(), dbInfo.getName())) {
                             result.add(rewrite);
                         }
                     }
