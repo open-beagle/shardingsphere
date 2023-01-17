@@ -17,6 +17,7 @@
 
 package org.apache.shardingsphere.proxy.backend.communication;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.kernel.ExecutorEngine;
@@ -65,6 +66,7 @@ import java.util.Optional;
 /**
  * Proxy SQL Executor.
  */
+@Slf4j
 public final class ProxySQLExecutor {
     
     private final String type;
@@ -164,6 +166,7 @@ public final class ProxySQLExecutor {
         try {
             executionGroupContext = prepareEngine.prepare(executionContext.getRouteContext(), executionContext.getExecutionUnits());
         } catch (final SQLException ex) {
+            log.error("prepare SQL exist exception: ", ex);
             return getSaneExecuteResults(executionContext, ex);
         }
         executionGroupContext.setDatabaseName(backendConnection.getConnectionSession().getDatabaseName());

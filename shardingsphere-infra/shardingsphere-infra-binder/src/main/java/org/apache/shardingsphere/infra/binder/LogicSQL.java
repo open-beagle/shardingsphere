@@ -19,6 +19,7 @@ package org.apache.shardingsphere.infra.binder;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 
 import java.util.List;
@@ -31,8 +32,15 @@ import java.util.List;
 public final class LogicSQL {
     
     private final SQLStatementContext<?> sqlStatementContext;
-    
-    private final String sql;
+
+    @Setter
+    private String sql;
     
     private final List<Object> parameters;
+
+    public LogicSQL(SQLStatementContext<?> sqlStatementContext, String sql, List<Object> parameters) {
+        this.sqlStatementContext = sqlStatementContext;
+        this.sql = sql;
+        this.parameters = parameters;
+    }
 }

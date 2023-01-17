@@ -39,6 +39,9 @@ import org.apache.shardingsphere.infra.federation.executor.FederationExecutor;
 import org.apache.shardingsphere.infra.federation.executor.FederationExecutorFactory;
 import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
 import org.apache.shardingsphere.infra.metadata.database.schema.util.SystemSchemaUtil;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.infra.rule.identifier.type.DataNodeContainedRule;
 import org.apache.shardingsphere.mode.metadata.MetaDataContexts;
 import org.apache.shardingsphere.proxy.backend.communication.DatabaseCommunicationEngine;
@@ -120,7 +123,42 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SneakyThrows(SQLException.class)
     public ResponseHeader execute() {
+//        LogicSQL logicSQL = getLogicSQL();
+//        ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
+//                logicSQL, getDatabase(), ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getProps());
+//        // TODO move federation route logic to binder
+//        SQLStatementContext<?> sqlStatementContext = logicSQL.getSqlStatementContext();
+//        MetaDataContexts metaDataContexts = ProxyContext.getInstance().getContextManager().getMetaDataContexts();
+//        ShardingSphereDatabase database = metaDataContexts.getMetaData().getDatabases().get(backendConnection.getConnectionSession().getDatabaseName());
+//        if (executionContext.getRouteContext().isFederated() || (sqlStatementContext instanceof SelectStatementContext
+//                && SystemSchemaUtil.containsSystemSchema(sqlStatementContext.getDatabaseType(), sqlStatementContext.getTablesContext().getSchemaNames(), database))) {
+//            ResultSet resultSet = doExecuteFederation(logicSQL, metaDataContexts);
+//            return processExecuteFederation(resultSet, metaDataContexts);
+//        }
+//        if (executionContext.getExecutionUnits().isEmpty()) {
+//            return new UpdateResponseHeader(executionContext.getSqlStatementContext().getSqlStatement());
+//        }
+//        proxySQLExecutor.checkExecutePrerequisites(executionContext);
+//        checkLockedDatabase(executionContext);
+//        List result = proxySQLExecutor.execute(executionContext);
+//        refreshMetaData(executionContext);
+//        Object executeResultSample = result.iterator().next();
+//        return executeResultSample instanceof QueryResult
+//                ? processExecuteQuery(executionContext, result, (QueryResult) executeResultSample)
+//                : processExecuteUpdate(executionContext, result);
+
+
+
+        // SQL 重写 2023年1月5日 update by pengsong
         LogicSQL logicSQL = getLogicSQL();
+        String rawSql = logicSQL.getSql();
+        // 先进行字符替换
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
+        // 再进行SQL重写
+        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName());
+        logicSQL.setSql(distSql);
+
+
         ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
                 logicSQL, getDatabase(), ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getProps());
         // TODO move federation route logic to binder

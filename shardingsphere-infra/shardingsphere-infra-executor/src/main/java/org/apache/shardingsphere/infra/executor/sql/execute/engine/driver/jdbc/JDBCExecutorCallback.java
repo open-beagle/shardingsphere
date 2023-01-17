@@ -89,7 +89,7 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             // 先进行字符替换
             String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
             // 再进行SQL重写
-            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getStorageResource());
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName());
 
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
