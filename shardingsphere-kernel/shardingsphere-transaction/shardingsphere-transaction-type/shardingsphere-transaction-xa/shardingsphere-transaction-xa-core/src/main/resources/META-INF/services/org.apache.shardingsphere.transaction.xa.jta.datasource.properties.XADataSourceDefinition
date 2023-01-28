@@ -24,3 +24,5 @@ org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.SQLSe
 org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.H2XADataSourceDefinition
 # by wuwanli
 org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.DMXADataSourceDefinition
+org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.OscarXADataSourceDefinition
+org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.GBaseXADataSourceDefinition

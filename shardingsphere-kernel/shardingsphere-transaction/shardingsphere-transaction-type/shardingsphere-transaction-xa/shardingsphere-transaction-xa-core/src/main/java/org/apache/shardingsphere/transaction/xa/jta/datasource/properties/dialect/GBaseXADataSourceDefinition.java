@@ -29,9 +29,8 @@ public final class GBaseXADataSourceDefinition implements XADataSourceDefinition
 
     @Override
     public Collection<String> getXADriverClassName() {
-        return Collections.singletonList("com.gbasedbt.jdbcx.IfxDataSource");
+        return Collections.singletonList("com.gbasedbt.jdbc.Driver");
     }
-
     @Override
     public String getType() {
         return "gbasedbt-sqli";

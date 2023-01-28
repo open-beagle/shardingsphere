@@ -125,6 +125,16 @@
             <version>8.1.2.141</version>
         </dependency>
         <dependency>
+            <groupId>com.esen.jdbc</groupId>
+            <artifactId>oscarJDBC</artifactId>
+            <version>8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.gbase</groupId>
+            <artifactId>ifxjdbc</artifactId>
+            <version>8s</version>
+        </dependency>
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
