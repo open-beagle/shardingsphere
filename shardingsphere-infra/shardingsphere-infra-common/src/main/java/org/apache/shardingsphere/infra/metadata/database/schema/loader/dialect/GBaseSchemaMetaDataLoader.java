@@ -44,14 +44,14 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
     private static final String TABLE_META_DATA_SQL = TABLE_META_DATA_SQL_NO_ORDER + ORDER_BY_COLUMN_ID;
 
     private static final String TABLE_META_DATA_SQL_IN_TABLES =
-        TABLE_META_DATA_SQL_NO_ORDER + " AND TABLE_NAME IN (%s)" + ORDER_BY_COLUMN_ID;
+        TABLE_META_DATA_SQL_NO_ORDER + " AND T1.TABNAME IN (%s)" + ORDER_BY_COLUMN_ID;
 
     private static final String INDEX_META_DATA_SQL =
         "SELECT T1.OWNER AS TABLE_SCHEMA,T2.TABNAME AS TABLE_NAME,T1.IDXNAME AS INDEX_NAME FROM SYSINDICES T1 INNER JOIN SYSTABLES T2 ON T1.TABID = T2.TABID WHERE T1.TABID > 100 AND T2.OWNER = ? AND T2.TABNAME IN (%S)";
     private static final String PRIMARY_KEY_META_DATA_SQL =
         "select T1.OWNER as TABLE_SCHEMA,T2.TABNAME as TABLE_NAME,T3.COLNAME as COLUMN_NAME from SYSCONSTRAINTS T1 inner join SYSTABLES T2 on T1.TABID = T2.TABID and T1.OWNER = T2.OWNER inner join SYSCOLUMNS T3 on T2.TABID = T3.TABID inner join SYSINDEXES T4 on T1.IDXNAME = T4.IDXNAME and T1.TABID = T4.TABID and T1.OWNER = T4.OWNER and(T3.COLNO = T4.PART1 or T3.COLNO = T4.PART2 or T3.COLNO = T4.PART3 or T3.COLNO = T4.PART4 or T3.COLNO = T4.PART5 or T3.COLNO = T4.PART6 or T3.COLNO = T4.PART7 or T3.COLNO = T4.PART8 or T3.COLNO = T4.PART9 or T3.COLNO = T4.PART10 or T3.COLNO = T4.PART11 or T3.COLNO = T4.PART12 or T3.COLNO = T4.PART13 or T3.COLNO = T4.PART14  or T3.COLNO = T4.PART15 or T3.COLNO = T4.PART16 ) where T1.TABID > 100 and T1.CONSTRTYPE = 'P' and T1.OWNER = ?";
     private static final String PRIMARY_KEY_META_DATA_SQL_IN_TABLES =
-        PRIMARY_KEY_META_DATA_SQL + " AND A.TABLE_NAME IN (%s)";
+        PRIMARY_KEY_META_DATA_SQL + " AND T2.TABNAME IN (%s)";
 
     private static final int COLLATION_START_MAJOR_VERSION = 12;
 
@@ -88,7 +88,7 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
             Map<String, Integer> dataTypes = DataTypeLoader.load(connection.getMetaData());
             appendDataType(dataTypes);
             Map<String, Collection<String>> tablePrimaryKeys = loadTablePrimaryKeys(connection, tables);
-            preparedStatement.setString(1, connection.getSchema());
+            preparedStatement.setString(1, connection.getMetaData().getUserName());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String tableName = resultSet.getString("TABLE_NAME");
@@ -110,6 +110,7 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
         dataTypes.put("DOUBLE PRECISION", Types.DOUBLE);
         dataTypes.put("IMAGE", Types.LONGVARBINARY);
         dataTypes.put("DEC", Types.DECIMAL);
+        dataTypes.put("DATETIME",Types.TIMESTAMP);
     }
 
     private ColumnMetaData loadColumnMetaData(final Map<String, Integer> dataTypeMap, final ResultSet resultSet,
@@ -137,19 +138,9 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
         return dataType;
     }
 
-    private String getTableMetaDataSQL(final Collection<String> tables, final DatabaseMetaData databaseMetaData)
-        throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder(28);
-        if (versionContainsIdentityColumn(databaseMetaData)) {
-            stringBuilder.append(", IDENTITY_COLUMN");
-        }
-        if (versionContainsCollation(databaseMetaData)) {
-            stringBuilder.append(", COLLATION");
-        }
-        String collation = stringBuilder.toString();
-        return tables.isEmpty() ? String.format(TABLE_META_DATA_SQL, collation)
-            : String.format(TABLE_META_DATA_SQL_IN_TABLES, collation,
-                tables.stream().map(each -> String.format("'%s'", each)).collect(Collectors.joining(",")));
+    private String getTableMetaDataSQL(final Collection<String> tables, final DatabaseMetaData databaseMetaData) {
+        return tables.isEmpty() ? TABLE_META_DATA_SQL : String.format(TABLE_META_DATA_SQL_IN_TABLES,
+            tables.stream().map(each -> String.format("'%s'", each)).collect(Collectors.joining(",")));
     }
 
     private boolean versionContainsCollation(final DatabaseMetaData databaseMetaData) throws SQLException {
@@ -166,7 +157,7 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
         final Collection<String> tableNames) throws SQLException {
         Map<String, Collection<IndexMetaData>> result = new HashMap<>(tableNames.size(), 1);
         try (PreparedStatement preparedStatement = connection.prepareStatement(getIndexMetaDataSQL(tableNames))) {
-            preparedStatement.setString(1, connection.getSchema());
+            preparedStatement.setString(1, connection.getMetaData().getUserName());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String indexName = resultSet.getString("INDEX_NAME");
@@ -190,7 +181,7 @@ public final class GBaseSchemaMetaDataLoader implements DialectSchemaMetaDataLoa
         final Collection<String> tableNames) throws SQLException {
         Map<String, Collection<String>> result = new HashMap<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement(getPrimaryKeyMetaDataSQL(tableNames))) {
-            preparedStatement.setString(1, connection.getSchema());
+            preparedStatement.setString(1,connection.getMetaData().getUserName());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     String columnName = resultSet.getString("COLUMN_NAME");

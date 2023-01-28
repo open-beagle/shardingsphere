@@ -29,7 +29,7 @@ public final class GBaseXADataSourceDefinition implements XADataSourceDefinition
 
     @Override
     public Collection<String> getXADriverClassName() {
-        return Collections.singletonList("com.gbasedbt.jdbc.Driver");
+        return Collections.singletonList("com.gbasedbt.jdbcx.IfxXADataSource");
     }
     @Override
     public String getType() {
