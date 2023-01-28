@@ -65,7 +65,7 @@ public final class ShardingSphereProxyVersion {
         DatabaseServerInfo databaseServerInfo = new DatabaseServerInfo(dataSource.get());
         log.info("{}, database name is `{}`", databaseServerInfo, databaseName);
         // DM 暂时只实现南向，不支持北向 by wuwanli
-        if (!"DM DBMS".equals(databaseServerInfo.getDatabaseName())) {
+        if (!"DM DBMS".equals(databaseServerInfo.getDatabaseName())&&!"OSCAR".equals(databaseServerInfo.getDatabaseName())) {
             DatabaseProtocolFrontendEngineFactory
                 .newInstance(DatabaseTypeEngine.getTrunkDatabaseType(databaseServerInfo.getDatabaseName()))
                 .setDatabaseVersion(databaseName, databaseServerInfo.getDatabaseVersion());

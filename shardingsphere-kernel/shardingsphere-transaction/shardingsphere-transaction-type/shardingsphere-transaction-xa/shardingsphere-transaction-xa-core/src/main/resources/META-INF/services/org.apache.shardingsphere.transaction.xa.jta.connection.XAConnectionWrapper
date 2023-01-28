@@ -23,3 +23,5 @@ org.apache.shardingsphere.transaction.xa.jta.connection.dialect.MariaDBXAConnect
 org.apache.shardingsphere.transaction.xa.jta.connection.dialect.H2XAConnectionWrapper
 # by wuwanli
 org.apache.shardingsphere.transaction.xa.jta.connection.dialect.DMXAConnectionWrapper
+org.apache.shardingsphere.transaction.xa.jta.connection.dialect.OscarXAConnectionWrapper
+org.apache.shardingsphere.transaction.xa.jta.connection.dialect.GBaseXAConnectionWrapper

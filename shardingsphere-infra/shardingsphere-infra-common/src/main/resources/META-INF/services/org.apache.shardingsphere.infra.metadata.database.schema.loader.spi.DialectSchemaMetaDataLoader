@@ -23,3 +23,5 @@ org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.OracleSc
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.H2SchemaMetaDataLoader
 # by wuwanli
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.DMSchemaMetaDataLoader
+org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.OscarSchemaMetaDataLoader
+org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.GBaseSchemaMetaDataLoader

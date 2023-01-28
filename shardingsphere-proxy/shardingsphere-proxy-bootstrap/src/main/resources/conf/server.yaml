@@ -34,13 +34,13 @@
 #      operationTimeoutMilliseconds: 500
 #  overwrite: false
 #
-#rules:
-#  - !AUTHORITY
-#    users:
-#      - root@%:root
-#      - sharding@:sharding
-#    provider:
-#      type: ALL_PERMITTED
+rules:
+  - !AUTHORITY
+    users:
+      - root@%:root
+      - sharding@:sharding
+    provider:
+      type: ALL_PERMITTED
 #  - !TRANSACTION
 #    defaultType: XA
 #    providerType: Atomikos
@@ -59,12 +59,12 @@
 #      initialCapacity: 128
 #      maximumSize: 1024
 
-#props:
+props:
 #  max-connections-size-per-query: 1
 #  kernel-executor-size: 16  # Infinite by default.
 #  proxy-frontend-flush-threshold: 128  # The default value is 128.
 #  proxy-hint-enabled: false
-#  sql-show: false
+  sql-show: true
 #  check-table-metadata-enabled: false
 #  show-process-list-enabled: false
 #    # Proxy backend query fetch size. A larger value may increase the memory usage of ShardingSphere Proxy.
@@ -82,3 +82,7 @@
 #  proxy-mysql-default-version: 5.7.22 # In the absence of schema name, the default version will be used.
 #  proxy-default-port: 3307 # Proxy default port.
 #  proxy-netty-backlog: 1024 # Proxy netty backlog.
+  proxy-frontend-database-protocol-type: PostgreSQL
+#  proxy-frontend-database-protocol-type: MySQL
+#  proxy-frontend-database-protocol-type: Oracle
+#  proxy-frontend-database-protocol-type: openGauss
