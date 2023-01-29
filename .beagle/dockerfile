@@ -14,5 +14,7 @@ COPY shardingsphere-distribution/shardingsphere-proxy-distribution/target/apache
 ARG MYSQL_CONNECTOR_VERSION
 
 COPY .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar /opt/shardingsphere-proxy/ext-lib/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
+COPY .tmp/oscarJDBC8.jar /opt/shardingsphere-proxy/ext-lib/oscarJDBC8.jar
+COPY .tmp/gbasedbtjdbc.jar /opt/shardingsphere-proxy/ext-lib/gbasedbtjdbc.jar
 
 ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT} && tail -f ${LOCAL_PATH}/logs/stdout.log
