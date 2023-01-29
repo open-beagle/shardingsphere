@@ -70,6 +70,8 @@ steps:
       - rm -rf .tmp
       - mkdir -p .tmp
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc.jar > .tmp/gbasedbtjdbc.jar
 
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
