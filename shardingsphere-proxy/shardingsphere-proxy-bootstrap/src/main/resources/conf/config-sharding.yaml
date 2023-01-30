@@ -22,18 +22,18 @@
 # 
 ######################################################################################################
 #
-databaseName: sharding_db
+#databaseName: sharding_db
 #
-dataSources:
-  ds_gbase:
-    url: jdbc:gbasedbt-sqli://47.104.105.222:37194/clouddemo:GBASEDBTSERVER=clouddemo;DB_LOCALE=zh_CN.utf8;CLIENT_LOCALE=zh_CN.utf8;IFX_LOCK_MODE_WAIT=60;
-    username: gbasedbt
-    password: GBase123
-    connectionTimeoutMilliseconds: 30000
-    idleTimeoutMilliseconds: 60000
-    maxLifetimeMilliseconds: 1800000
-    maxPoolSize: 50
-    minPoolSize: 1
+#dataSources:
+#  ds_gbase:
+#    url: jdbc:gbasedbt-sqli://47.104.105.222:37194/clouddemo:GBASEDBTSERVER=clouddemo;DB_LOCALE=zh_CN.utf8;CLIENT_LOCALE=zh_CN.utf8;IFX_LOCK_MODE_WAIT=60;
+#    username: gbasedbt
+#    password: GBase123
+#    connectionTimeoutMilliseconds: 30000
+#    idleTimeoutMilliseconds: 60000
+#    maxLifetimeMilliseconds: 1800000
+#    maxPoolSize: 50
+#    minPoolSize: 1
 #  ds_oscar:
 #    url: jdbc:oscar://47.104.105.222:37193/OSRDB
 #    username: clouddemo
