@@ -41,9 +41,22 @@ steps:
 #    commands:
 #      - git apply .beagle/0001-sql-parse-mysql.patch
 
+  - name: curl
+    image: registry.cn-qingdao.aliyuncs.com/wod/curl:alpine
+    environment:
+      MYSQL_CONNECTOR_VERSION: 5.1.49
+    commands:
+      - rm -rf .tmp
+      - mkdir -p .tmp
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc.jar > .tmp/gbasedbtjdbc.jar
+
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
     commands:
+      - mvn install:install-file "-Dfile=.tmp/oscarJDBC8.jar" "-DgroupId=com.esen.jdbc" "-DartifactId=oscarJDBC" "-Dversion=8" "-Dpackaging=jar"
+      - mvn install:install-file "-Dfile=.tmp/gbasedbtjdbc.jar" "-DgroupId=com.gbase" "-DartifactId=ifxjdbc" "-Dversion=8s" "-Dpackaging=jar"
       - cd $DRONE_WORKSPACE/shardingsphere-infra
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
@@ -61,17 +74,6 @@ steps:
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
-
-  - name: curl
-    image: registry.cn-qingdao.aliyuncs.com/wod/curl:alpine
-    environment:
-      MYSQL_CONNECTOR_VERSION: 5.1.49
-    commands:
-      - rm -rf .tmp
-      - mkdir -p .tmp
-      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
-      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
-      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc.jar > .tmp/gbasedbtjdbc.jar
 
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
