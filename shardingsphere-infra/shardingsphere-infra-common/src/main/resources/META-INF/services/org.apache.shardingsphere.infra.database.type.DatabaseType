@@ -27,3 +27,4 @@ org.apache.shardingsphere.infra.database.type.dialect.H2DatabaseType
 org.apache.shardingsphere.infra.database.type.dialect.DMDatabaseType
 org.apache.shardingsphere.infra.database.type.dialect.OscarDatabaseType
 org.apache.shardingsphere.infra.database.type.dialect.GBaseDatabaseType
+org.apache.shardingsphere.infra.database.type.dialect.KingbaseDatabaseType

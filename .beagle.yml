@@ -51,6 +51,7 @@ steps:
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc.jar > .tmp/gbasedbtjdbc.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/kingbase8-8.6.0.jar > .tmp/kingbase8-8.6.0.jar
 
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17

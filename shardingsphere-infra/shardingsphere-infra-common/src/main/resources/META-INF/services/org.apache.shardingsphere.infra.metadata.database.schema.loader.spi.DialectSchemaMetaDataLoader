@@ -25,3 +25,4 @@ org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.H2Schema
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.DMSchemaMetaDataLoader
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.OscarSchemaMetaDataLoader
 org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.GBaseSchemaMetaDataLoader
+org.apache.shardingsphere.infra.metadata.database.schema.loader.dialect.KingbaseSchemaMetaDataLoader
