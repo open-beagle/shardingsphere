@@ -26,3 +26,4 @@ org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.H2XAD
 org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.DMXADataSourceDefinition
 org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.OscarXADataSourceDefinition
 org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.GBaseXADataSourceDefinition
+org.apache.shardingsphere.transaction.xa.jta.datasource.properties.dialect.KingbaseXADataSourceDefinition

@@ -67,7 +67,8 @@ public final class ShardingSphereProxyVersion {
         // 排除只实现南向，不支持北向的数据库 by wuwanli
         if (!"DM DBMS".equals(databaseServerInfo.getDatabaseName())
             && !"OSCAR".equals(databaseServerInfo.getDatabaseName())
-            && !"GBase 8s Server".equals(databaseServerInfo.getDatabaseName())) {
+            && !"GBase 8s Server".equals(databaseServerInfo.getDatabaseName())
+            && !"KingbaseES".equals(databaseServerInfo.getDatabaseName())) {
             DatabaseProtocolFrontendEngineFactory
                 .newInstance(DatabaseTypeEngine.getTrunkDatabaseType(databaseServerInfo.getDatabaseName()))
                 .setDatabaseVersion(databaseName, databaseServerInfo.getDatabaseVersion());

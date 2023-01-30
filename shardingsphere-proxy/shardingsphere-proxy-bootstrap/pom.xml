@@ -125,6 +125,11 @@
             <version>8.1.2.141</version>
         </dependency>
         <dependency>
+            <groupId>com.kingbase8</groupId>
+            <artifactId>kingbase8</artifactId>
+            <version>8.6.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.esen.jdbc</groupId>
             <artifactId>oscarJDBC</artifactId>
             <version>8</version>
