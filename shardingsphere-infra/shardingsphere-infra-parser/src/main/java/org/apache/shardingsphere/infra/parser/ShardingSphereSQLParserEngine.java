@@ -17,6 +17,7 @@
 
 package org.apache.shardingsphere.infra.parser;
 
+import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.shardingsphere.distsql.parser.engine.api.DistSQLStatementParserEngine;
 import org.apache.shardingsphere.infra.parser.sql.SQLStatementParserEngine;
@@ -29,6 +30,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.util.SQLUtil;
 /**
  * ShardingSphere SQL parser engine.
  */
+@Slf4j
 public final class ShardingSphereSQLParserEngine {
     
     private final SQLStatementParserEngine sqlStatementParserEngine;
@@ -60,7 +62,8 @@ public final class ShardingSphereSQLParserEngine {
             try {
                 String trimSQL = SQLUtil.trimComment(sql);
                 return distSQLStatementParserEngine.parse(trimSQL);
-            } catch (final SQLParsingException ignored) {
+            } catch (final SQLParsingException e) {
+                log.error("SQL PARSE ERROR: ", e);
                 throw originalEx;
             }
         }

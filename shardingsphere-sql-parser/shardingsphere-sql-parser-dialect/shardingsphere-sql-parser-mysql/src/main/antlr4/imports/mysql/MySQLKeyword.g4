@@ -535,10 +535,6 @@ DESC
     : D E S C
     ;
 
-DESCRIBE
-    : D E S C R I B E
-    ;
-
 DESCRIPTION
     : D E S C R I P T I O N
     ;
