@@ -35,8 +35,9 @@ public final class LogicSQL {
 
     @Setter
     private String sql;
-    
-    private final List<Object> parameters;
+
+    @Setter
+    private List<Object> parameters;
 
     public LogicSQL(SQLStatementContext<?> sqlStatementContext, String sql, List<Object> parameters) {
         this.sqlStatementContext = sqlStatementContext;

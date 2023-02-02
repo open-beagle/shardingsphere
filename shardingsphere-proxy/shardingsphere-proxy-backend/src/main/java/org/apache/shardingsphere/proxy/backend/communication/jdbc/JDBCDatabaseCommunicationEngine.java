@@ -154,6 +154,21 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
         String rawSql = logicSQL.getSql();
         // 先进行字符替换
         String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
+        List<Object> parameters = logicSQL.getParameters();
+        List<Object> replaceParameters = new ArrayList<>();
+        // 参数替换
+        if(parameters != null && parameters.size() > 0) {
+            parameters.forEach(parameter -> {
+                if(parameter instanceof String) {
+                    String value = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, String.valueOf(parameter), SQLStrReplaceTriggerModeEnum.BACK_END);
+                    replaceParameters.add(value);
+                } else {
+                    replaceParameters.add(parameter);
+                }
+            });
+        }
+        logicSQL.setParameters(replaceParameters);
+
         // 再进行SQL重写
         distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName());
         logicSQL.setSql(distSql);
