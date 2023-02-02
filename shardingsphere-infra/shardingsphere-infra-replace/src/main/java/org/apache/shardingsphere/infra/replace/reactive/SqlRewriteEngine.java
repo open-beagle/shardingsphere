@@ -53,9 +53,8 @@ public class SqlRewriteEngine implements SqlReplace {
 
     @Override
     public String replace(String sql, Object obj) {
-        if (obj instanceof Statement) {
-            Statement storageResource = (Statement) obj;
-            return reWriteSql(sql, storageResource);
+        if (Objects.nonNull(obj)) {
+            return reWriteSql(sql, String.valueOf(obj));
         }
         return sql;
     }
@@ -67,14 +66,13 @@ public class SqlRewriteEngine implements SqlReplace {
     
     /**
      * 重写SQL
-     * @param storageResource
+     * @param dbName
      * @return
      */
-    public static String reWriteSql(String sql, final Statement storageResource) {
+    public static String reWriteSql(String sql, final String dbName) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             try {
-                String connectionUrl = storageResource.getConnection().getMetaData().getURL();
-                List<SqlRewrite> rewriteList = getSqlReWrite(connectionUrl);
+                List<SqlRewrite> rewriteList = getSqlReWrite(dbName);
                 if (rewriteList.size() > 0) {
                     Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
                     if (rewriteMap.size() > 0) {
@@ -96,12 +94,11 @@ public class SqlRewriteEngine implements SqlReplace {
     
     /**
      * 获取SQL重写规则
-     * @param connectionUrl
+     * @param dbName
      * @return
      */
-    private static List<SqlRewrite> getSqlReWrite(String connectionUrl) {
+    private static List<SqlRewrite> getSqlReWrite(String dbName) {
         List<SqlRewrite> result = new ArrayList<>();
-        DataBaseInfo dbInfo = buildDbInfo(connectionUrl);
         GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_REWRITE, StandardCharsets.UTF_8)).build();
         GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_REWRITE, getOption);
         if (Objects.nonNull(response)) {
@@ -110,10 +107,7 @@ public class SqlRewriteEngine implements SqlReplace {
                 if (Objects.equals(rewrite.getInstanceId(), SqlRewriteEngine.INSTANCE_ID)) {
                     if (Objects.nonNull(rewrite.getSouthDatabaseId())) {
                         SouthDatabase southDatabase = JetcdClientUtil.getSingleObject(EtcdKey.SQL_SOUTH_DATABASE + rewrite.getSouthDatabaseId(), SouthDatabase.class);
-                        if (Objects.nonNull(southDatabase) &&
-                                StringUtils.equalsIgnoreCase(southDatabase.getHost(), dbInfo.getHost()) &&
-                                StringUtils.equalsIgnoreCase(southDatabase.getPort(), dbInfo.getPort()) &&
-                                StringUtils.equalsIgnoreCase(southDatabase.getName(), dbInfo.getName())) {
+                        if (Objects.nonNull(southDatabase) && StringUtils.equalsIgnoreCase(southDatabase.getName(), dbName)) {
                             result.add(rewrite);
                         }
                     }
