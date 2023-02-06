@@ -26,6 +26,7 @@ import org.apache.shardingsphere.infra.binder.LogicSQL;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -44,6 +45,10 @@ public final class SQLLogger {
      */
     public static void logSQL(final LogicSQL logicSQL, final boolean showSimple, final ExecutionContext executionContext) {
         log("Logic SQL: {}", logicSQL.getSql());
+        List<Object> parameters = logicSQL.getParameters();
+        if(parameters != null && parameters.size() > 0) {
+            log("parameters: {}", parameters);
+        }
         log("SQLStatement: {}", logicSQL.getSqlStatementContext().getSqlStatement());
         if (showSimple) {
             logSimpleMode(executionContext.getExecutionUnits());
