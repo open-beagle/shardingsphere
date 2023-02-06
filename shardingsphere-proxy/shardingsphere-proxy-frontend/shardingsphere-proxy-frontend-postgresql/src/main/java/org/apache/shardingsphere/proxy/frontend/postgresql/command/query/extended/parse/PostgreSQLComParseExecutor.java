@@ -60,15 +60,27 @@ public final class PostgreSQLComParseExecutor implements CommandExecutor {
     
     @Override
     public Collection<DatabasePacket<?>> execute() {
+//        ShardingSphereSQLParserEngine sqlParserEngine = null;
+//        String sql = packet.getSql();
+//        SQLStatement sqlStatement = sql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(sql, true);
+//        if (sqlStatement.getParameterCount() > 0) {
+//            sql = convertSQLToJDBCStyle(sqlStatement, sql);
+//            sqlStatement = sqlParserEngine.parse(sql, true);
+//        }
+//        List<PostgreSQLColumnType> paddedColumnTypes = paddingColumnTypes(sqlStatement.getParameterCount(), packet.readParameterTypes());
+//        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), sql, sqlStatement, paddedColumnTypes);
+//        return Collections.singletonList(PostgreSQLParseCompletePacket.getInstance());
+
         ShardingSphereSQLParserEngine sqlParserEngine = null;
-        String sql = packet.getSql();
-        SQLStatement sqlStatement = sql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(sql, true);
+        String rawSql = packet.getSql();
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+        SQLStatement sqlStatement = distSql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(distSql, true);
         if (sqlStatement.getParameterCount() > 0) {
-            sql = convertSQLToJDBCStyle(sqlStatement, sql);
-            sqlStatement = sqlParserEngine.parse(sql, true);
+            distSql = convertSQLToJDBCStyle(sqlStatement, distSql);
+            sqlStatement = sqlParserEngine.parse(distSql, true);
         }
         List<PostgreSQLColumnType> paddedColumnTypes = paddingColumnTypes(sqlStatement.getParameterCount(), packet.readParameterTypes());
-        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), sql, sqlStatement, paddedColumnTypes);
+        PostgreSQLPreparedStatementRegistry.getInstance().register(connectionSession.getConnectionId(), packet.getStatementId(), distSql, sqlStatement, paddedColumnTypes);
         return Collections.singletonList(PostgreSQLParseCompletePacket.getInstance());
     }
     
