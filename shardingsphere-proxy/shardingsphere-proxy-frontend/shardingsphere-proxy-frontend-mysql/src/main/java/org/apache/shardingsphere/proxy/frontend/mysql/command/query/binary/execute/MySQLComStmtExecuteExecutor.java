@@ -33,6 +33,9 @@ import org.apache.shardingsphere.infra.binder.type.TableAvailable;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
 import org.apache.shardingsphere.infra.executor.check.SQLCheckEngine;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
+import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
+import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.infra.rule.ShardingSphereRule;
 import org.apache.shardingsphere.mode.metadata.MetaDataContexts;
 import org.apache.shardingsphere.parser.rule.SQLParserRule;
@@ -81,12 +84,44 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
     private int currentSequenceId;
     
     public MySQLComStmtExecuteExecutor(final MySQLComStmtExecutePacket packet, final ConnectionSession connectionSession) throws SQLException {
+//        String databaseName = connectionSession.getDatabaseName();
+//        MetaDataContexts metaDataContexts = ProxyContext.getInstance().getContextManager().getMetaDataContexts();
+//        Optional<SQLParserRule> sqlParserRule = metaDataContexts.getMetaData().getGlobalRuleMetaData().findSingleRule(SQLParserRule.class);
+//        Preconditions.checkState(sqlParserRule.isPresent());
+//        SQLStatement sqlStatement = sqlParserRule.get().getSQLParserEngine(
+//                DatabaseTypeEngine.getTrunkDatabaseTypeName(metaDataContexts.getMetaData().getDatabases().get(databaseName).getProtocolType())).parse(packet.getSql(), true);
+//        if (AutoCommitUtils.needOpenTransaction(sqlStatement)) {
+//            connectionSession.getBackendConnection().handleAutoCommit();
+//        }
+//        SQLStatementContext<?> sqlStatementContext = SQLStatementContextFactory.newInstance(metaDataContexts.getMetaData().getDatabases(), packet.getParameters(),
+//                sqlStatement, connectionSession.getDefaultDatabaseName());
+//        // TODO optimize SQLStatementDatabaseHolder
+//        if (sqlStatementContext instanceof TableAvailable) {
+//            ((TableAvailable) sqlStatementContext).getTablesContext().getDatabaseName().ifPresent(SQLStatementDatabaseHolder::set);
+//        }
+//        SQLCheckEngine.check(sqlStatement, Collections.emptyList(), getRules(databaseName), databaseName, metaDataContexts.getMetaData().getDatabases(), connectionSession.getGrantee());
+//        characterSet = connectionSession.getAttributeMap().attr(MySQLConstants.MYSQL_CHARACTER_SET_ATTRIBUTE_KEY).get().getId();
+//        // TODO Refactor the following branch
+//        if (sqlStatement instanceof TCLStatement) {
+//            databaseCommunicationEngine = null;
+//            textProtocolBackendHandler =
+//                    TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("MySQL"), packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
+//            return;
+//        }
+//        textProtocolBackendHandler = null;
+//        databaseCommunicationEngine = DatabaseCommunicationEngineFactory.getInstance().newBinaryProtocolInstance(sqlStatementContext, packet.getSql(), packet.getParameters(),
+//                connectionSession.getBackendConnection());
+
+        // 前向SQL 替换  2023年2月6日 update by pengsong
+        String rawSql = packet.getSql();
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+
         String databaseName = connectionSession.getDatabaseName();
         MetaDataContexts metaDataContexts = ProxyContext.getInstance().getContextManager().getMetaDataContexts();
         Optional<SQLParserRule> sqlParserRule = metaDataContexts.getMetaData().getGlobalRuleMetaData().findSingleRule(SQLParserRule.class);
         Preconditions.checkState(sqlParserRule.isPresent());
         SQLStatement sqlStatement = sqlParserRule.get().getSQLParserEngine(
-                DatabaseTypeEngine.getTrunkDatabaseTypeName(metaDataContexts.getMetaData().getDatabases().get(databaseName).getProtocolType())).parse(packet.getSql(), true);
+                DatabaseTypeEngine.getTrunkDatabaseTypeName(metaDataContexts.getMetaData().getDatabases().get(databaseName).getProtocolType())).parse(distSql, true);
         if (AutoCommitUtils.needOpenTransaction(sqlStatement)) {
             connectionSession.getBackendConnection().handleAutoCommit();
         }
@@ -102,11 +137,11 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
         if (sqlStatement instanceof TCLStatement) {
             databaseCommunicationEngine = null;
             textProtocolBackendHandler =
-                    TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("MySQL"), packet.getSql(), () -> Optional.of(sqlStatement), connectionSession);
+                    TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("MySQL"), distSql, () -> Optional.of(sqlStatement), connectionSession);
             return;
         }
         textProtocolBackendHandler = null;
-        databaseCommunicationEngine = DatabaseCommunicationEngineFactory.getInstance().newBinaryProtocolInstance(sqlStatementContext, packet.getSql(), packet.getParameters(),
+        databaseCommunicationEngine = DatabaseCommunicationEngineFactory.getInstance().newBinaryProtocolInstance(sqlStatementContext, distSql, packet.getParameters(),
                 connectionSession.getBackendConnection());
     }
     

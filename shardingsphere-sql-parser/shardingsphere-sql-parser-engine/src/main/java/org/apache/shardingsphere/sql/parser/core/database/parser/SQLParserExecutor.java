@@ -22,9 +22,6 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
-import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
-import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
 import org.apache.shardingsphere.sql.parser.api.parser.SQLParser;
 import org.apache.shardingsphere.sql.parser.core.ParseASTNode;
 import org.apache.shardingsphere.sql.parser.core.SQLParserFactory;
@@ -46,20 +43,11 @@ public final class SQLParserExecutor {
      * @return parse AST node
      */
     public ParseASTNode parse(final String sql) {
-        // 前向SQL 替换  2022年12月22日 update by pengsong
-        String rawSql = sql;
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
-        ParseASTNode result = twoPhaseParse(distSql);
+        ParseASTNode result = twoPhaseParse(sql);
         if (result.getRootNode() instanceof ErrorNode) {
-            throw new SQLParsingException("Unsupported SQL of `%s`", distSql);
+            throw new SQLParsingException("Unsupported SQL of `%s`", sql);
         }
         return result;
-
-//        ParseASTNode result = twoPhaseParse(sql);
-//        if (result.getRootNode() instanceof ErrorNode) {
-//            throw new SQLParsingException("Unsupported SQL of `%s`", sql);
-//        }
-//        return result;
     }
     
     private ParseASTNode twoPhaseParse(final String sql) {
