@@ -54,6 +54,8 @@ import org.apache.shardingsphere.sql.parser.sql.dialect.statement.opengauss.ddl.
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.opengauss.ddl.OpenGaussFetchStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.opengauss.ddl.OpenGaussMoveStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.postgresql.PostgreSQLStatement;
+import org.apache.shardingsphere.sql.parser.sql.dialect.statement.postgresql.ddl.PostgreSQLCloseStatement;
+import org.apache.shardingsphere.sql.parser.sql.dialect.statement.postgresql.ddl.PostgreSQLTruncateStatement;
 import org.apache.shardingsphere.transaction.core.TransactionType;
 
 import java.sql.Connection;
@@ -106,9 +108,15 @@ public final class ProxySQLExecutor {
     
     private boolean isExecuteDDLInPostgreSQLOpenGaussTransaction(final SQLStatement sqlStatement) {
         // TODO implement DDL statement commit/rollback in PostgreSQL/openGauss transaction
+//        boolean isPostgreSQLOpenGaussStatement = sqlStatement instanceof PostgreSQLStatement || sqlStatement instanceof OpenGaussStatement;
+//        boolean isCursorStatement = sqlStatement instanceof OpenGaussCursorStatement
+//                || sqlStatement instanceof OpenGaussCloseStatement || sqlStatement instanceof OpenGaussMoveStatement || sqlStatement instanceof OpenGaussFetchStatement;
+//        return sqlStatement instanceof DDLStatement && !isCursorStatement && isPostgreSQLOpenGaussStatement && backendConnection.getConnectionSession().getTransactionStatus().isInTransaction();
+
         boolean isPostgreSQLOpenGaussStatement = sqlStatement instanceof PostgreSQLStatement || sqlStatement instanceof OpenGaussStatement;
         boolean isCursorStatement = sqlStatement instanceof OpenGaussCursorStatement
-                || sqlStatement instanceof OpenGaussCloseStatement || sqlStatement instanceof OpenGaussMoveStatement || sqlStatement instanceof OpenGaussFetchStatement;
+                || sqlStatement instanceof OpenGaussCloseStatement || sqlStatement instanceof OpenGaussMoveStatement || sqlStatement instanceof OpenGaussFetchStatement
+                || sqlStatement instanceof PostgreSQLTruncateStatement;
         return sqlStatement instanceof DDLStatement && !isCursorStatement && isPostgreSQLOpenGaussStatement && backendConnection.getConnectionSession().getTransactionStatus().isInTransaction();
     }
     
