@@ -94,6 +94,8 @@ public abstract class AbstractDatabaseMetadataExecutor implements DatabaseAdminQ
 //            }
 //        }
 
+
+        // 2023年2月7日 update by pengsong 增加Proxy返回处理中对于空行的字段名称处理
         boolean hasNext = true;
         while (hasNext) {
             hasNext = resultSet.next();
