@@ -80,19 +80,37 @@ public abstract class AbstractDatabaseMetadataExecutor implements DatabaseAdminQ
     }
     
     private void handleResultSet(final String databaseName, final ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
+//        while (resultSet.next()) {
+//            Map<String, Object> rowMap = new LinkedHashMap<>();
+//            Map<String, String> aliasMap = new LinkedHashMap<>();
+//            ResultSetMetaData metaData = resultSet.getMetaData();
+//            for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
+//                aliasMap.put(metaData.getColumnName(i), metaData.getColumnLabel(i));
+//                rowMap.put(metaData.getColumnLabel(i), resultSet.getString(i));
+//            }
+//            rowPostProcessing(databaseName, rowMap, aliasMap);
+//            if (!rowMap.isEmpty()) {
+//                rows.addFirst(rowMap);
+//            }
+//        }
+
+        boolean hasNext = true;
+        while (hasNext) {
+            hasNext = resultSet.next();
             Map<String, Object> rowMap = new LinkedHashMap<>();
             Map<String, String> aliasMap = new LinkedHashMap<>();
             ResultSetMetaData metaData = resultSet.getMetaData();
             for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
                 aliasMap.put(metaData.getColumnName(i), metaData.getColumnLabel(i));
-                rowMap.put(metaData.getColumnLabel(i), resultSet.getString(i));
+                String value = hasNext ? resultSet.getString(i) : null;
+                rowMap.put(metaData.getColumnLabel(i), value);
             }
             rowPostProcessing(databaseName, rowMap, aliasMap);
             if (!rowMap.isEmpty()) {
                 rows.addFirst(rowMap);
             }
         }
+
     }
     
     /**
