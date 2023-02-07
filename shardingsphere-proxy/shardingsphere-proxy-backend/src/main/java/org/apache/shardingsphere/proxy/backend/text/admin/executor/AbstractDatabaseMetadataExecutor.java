@@ -97,20 +97,22 @@ public abstract class AbstractDatabaseMetadataExecutor implements DatabaseAdminQ
 
         // 2023年2月7日 update by pengsong 增加Proxy返回处理中对于空行的字段名称处理
         boolean hasNext = true;
+        boolean empty = resultSet.next();
         while (hasNext) {
-            hasNext = resultSet.next();
             Map<String, Object> rowMap = new LinkedHashMap<>();
             Map<String, String> aliasMap = new LinkedHashMap<>();
             ResultSetMetaData metaData = resultSet.getMetaData();
             for (int i = 1; i < metaData.getColumnCount() + 1; i++) {
                 aliasMap.put(metaData.getColumnName(i), metaData.getColumnLabel(i));
-                String value = hasNext ? resultSet.getString(i) : null;
+                String value = empty ? resultSet.getString(i) : null;
                 rowMap.put(metaData.getColumnLabel(i), value);
             }
             rowPostProcessing(databaseName, rowMap, aliasMap);
             if (!rowMap.isEmpty()) {
                 rows.addFirst(rowMap);
             }
+            hasNext = resultSet.next();
+            empty = hasNext;
         }
 
     }
