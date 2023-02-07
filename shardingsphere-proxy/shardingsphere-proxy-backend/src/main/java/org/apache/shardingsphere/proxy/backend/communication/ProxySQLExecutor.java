@@ -113,6 +113,7 @@ public final class ProxySQLExecutor {
 //                || sqlStatement instanceof OpenGaussCloseStatement || sqlStatement instanceof OpenGaussMoveStatement || sqlStatement instanceof OpenGaussFetchStatement;
 //        return sqlStatement instanceof DDLStatement && !isCursorStatement && isPostgreSQLOpenGaussStatement && backendConnection.getConnectionSession().getTransactionStatus().isInTransaction();
 
+        // 2023年2月7日 update by pengsong 增加 事物中允许 PostgreSQLTruncateStatement 操作
         boolean isPostgreSQLOpenGaussStatement = sqlStatement instanceof PostgreSQLStatement || sqlStatement instanceof OpenGaussStatement;
         boolean isCursorStatement = sqlStatement instanceof OpenGaussCursorStatement
                 || sqlStatement instanceof OpenGaussCloseStatement || sqlStatement instanceof OpenGaussMoveStatement || sqlStatement instanceof OpenGaussFetchStatement
