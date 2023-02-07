@@ -87,10 +87,6 @@ INDEX
     : I N D E X
     ;
 
-CONSTRAINT
-    : C O N S T R A I N T
-    ;
-
 PRIMARY
     : P R I M A R Y
     ;
@@ -490,10 +486,6 @@ NEXT
 
 NAME
     : N A M E
-    ;
-
-COLLATION
-    : C O L L A T I O N
     ;
 
 NAMES

@@ -335,10 +335,6 @@ OWNED
     : O W N E D
     ;
 
-OWNER
-    : O W N E R
-    ;
-
 PARTIAL
     : P A R T I A L
     ;
@@ -949,10 +945,6 @@ CLASS
 
 CONFIGURATION
     : C O N F I G U R A T I O N
-    ;
-
-COMMENT
-    : C O M M E N T
     ;
 
 DETACH
