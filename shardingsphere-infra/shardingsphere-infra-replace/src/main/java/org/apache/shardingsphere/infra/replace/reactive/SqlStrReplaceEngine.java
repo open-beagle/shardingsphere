@@ -32,9 +32,7 @@ import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * SQL 字符替换
@@ -64,19 +62,36 @@ public class SqlStrReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
-            Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist, (o1, o2) -> o2));
-            if (replaceMap.size() > 0) {
-                for (Map.Entry<String, String> ruleSet : replaceMap.entrySet()) {
-                    sql = replace(ruleSet.getKey(), ruleSet.getValue(), sql);
+//            Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist, (o1, o2) -> o2));
+//            if (replaceMap.size() > 0) {
+//                for (Map.Entry<String, String> ruleSet : replaceMap.entrySet()) {
+//                    sql = replace(ruleSet.getKey(), ruleSet.getValue(), sql);
+//                }
+//            }
+            if(sqlConvert != null && sqlConvert.size() > 0) {
+                for (SqlConvert convert : sqlConvert) {
+                    sql = replace(convert.getRaw(), convert.getDist(), sql, convert.getIsRegular());
                 }
             }
             return sql;
         }
         return sql;
     }
-    
-    private static String replace(String raw, String dist, String sourceSql) {
-        return StringUtils.replace(sourceSql, raw, dist);
+
+    /**
+     * SQL 字符替换
+     * @param raw 原始字符串
+     * @param dist 目标字符串
+     * @param sourceSql SQL
+     * @param isRegular 是否正则替换
+     * @return 替换后的SQL
+     */
+    private static String replace(String raw, String dist, String sourceSql, Boolean isRegular) {
+        if(Objects.isNull(isRegular) || Objects.equals(isRegular, false)) {
+            return StringUtils.replace(sourceSql, raw, dist);
+        } else {
+            return StringUtils.replacePattern(sourceSql, raw, dist);
+        }
     }
     
     /**

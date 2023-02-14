@@ -53,6 +53,10 @@ public class SqlConvert extends Base {
      */
     private String dist;
     /**
+     * 是否是正则
+     */
+    private Boolean isRegular;
+    /**
      * 触发模式 北向 - frontend 南向 - backend
      */
     private String triggerMode;
