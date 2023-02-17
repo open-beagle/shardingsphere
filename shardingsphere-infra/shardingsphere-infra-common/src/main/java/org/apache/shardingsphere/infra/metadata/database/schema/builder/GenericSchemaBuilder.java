@@ -121,7 +121,7 @@ public final class GenericSchemaBuilder {
         Map<String, ShardingSphereSchema> result = new ConcurrentHashMap<>(schemaMetaDataMap.size(), 1);
         for (Entry<String, SchemaMetaData> entry : schemaMetaDataMap.entrySet()) {
             Map<String, ShardingSphereTable> tables = convertToTableMap(entry.getValue().getTables());
-            result.put(entry.getKey().toLowerCase(), new ShardingSphereSchema(tables));
+            result.put(entry.getKey(), new ShardingSphereSchema(tables));
         }
         return result;
     }
