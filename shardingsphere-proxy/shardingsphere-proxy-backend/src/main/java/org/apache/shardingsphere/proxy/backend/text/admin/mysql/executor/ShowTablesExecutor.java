@@ -81,8 +81,11 @@ public final class ShowTablesExecutor implements DatabaseAdminQueryExecutor {
     }
     
     private Collection<String> getAllTableNames(final String databaseName) {
+        // updated by pensong 2023年2月21日 schemaName转小写 解决大小写问题
+//        Collection<String> result = ProxyContext.getInstance()
+//                .getDatabase(databaseName).getSchemas().get(databaseName).getTables().values().stream().map(ShardingSphereTable::getName).collect(Collectors.toList());
         Collection<String> result = ProxyContext.getInstance()
-                .getDatabase(databaseName).getSchemas().get(databaseName).getTables().values().stream().map(ShardingSphereTable::getName).collect(Collectors.toList());
+                .getDatabase(databaseName).getSchemas().get(databaseName.toLowerCase()).getTables().values().stream().map(ShardingSphereTable::getName).collect(Collectors.toList());
         if (showTablesStatement.getFilter().isPresent()) {
             Optional<String> pattern = showTablesStatement.getFilter().get().getLike().map(optional -> SQLUtil.convertLikePatternToRegex(optional.getPattern()));
             return pattern.isPresent() ? result.stream().filter(each -> RegularUtil.matchesCaseInsensitive(pattern.get(), each)).collect(Collectors.toList()) : result;

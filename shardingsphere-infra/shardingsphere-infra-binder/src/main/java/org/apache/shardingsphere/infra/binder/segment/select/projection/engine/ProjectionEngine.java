@@ -156,7 +156,9 @@ public final class ProjectionEngine {
         }
         String tableName = ((SimpleTableSegment) table).getTableName().getIdentifier().getValue();
         String tableAlias = table.getAlias().orElse(tableName);
-        String schemaName = ((SimpleTableSegment) table).getOwner().map(optional -> optional.getIdentifier().getValue()).orElse(DatabaseTypeEngine.getDefaultSchemaName(databaseType, databaseName));
+        // updated by pensong 2023年2月21日 schemaName转小写 解决大小写问题
+//        String schemaName = ((SimpleTableSegment) table).getOwner().map(optional -> optional.getIdentifier().getValue()).orElse(DatabaseTypeEngine.getDefaultSchemaName(databaseType, databaseName));
+        String schemaName = ((SimpleTableSegment) table).getOwner().map(optional -> optional.getIdentifier().getValue()).orElse(DatabaseTypeEngine.getDefaultSchemaName(databaseType, databaseName)).toLowerCase();
         Collection<ColumnProjection> result = new LinkedList<>();
         if (null == owner) {
             schemas.get(schemaName).getAllColumnNames(tableName).stream().map(each -> new ColumnProjection(tableAlias, each, null)).forEach(result::add);

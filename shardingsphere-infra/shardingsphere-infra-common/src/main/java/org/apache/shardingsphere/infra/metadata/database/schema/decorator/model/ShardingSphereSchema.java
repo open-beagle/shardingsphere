@@ -41,7 +41,7 @@ public final class ShardingSphereSchema {
     
     public ShardingSphereSchema(final Map<String, ShardingSphereTable> tables) {
         this.tables = new ConcurrentHashMap<>(tables.size(), 1);
-        this.tables.putAll(tables);
+        tables.forEach((key, value) -> this.tables.put(key.toLowerCase(), value));
     }
     
     /**
@@ -60,7 +60,7 @@ public final class ShardingSphereSchema {
      * @return table meta data
      */
     public ShardingSphereTable get(final String tableName) {
-        return tables.get(tableName);
+        return tables.get(tableName.toLowerCase());
     }
     
     /**
@@ -70,7 +70,7 @@ public final class ShardingSphereSchema {
      * @param table table
      */
     public void put(final String tableName, final ShardingSphereTable table) {
-        tables.put(tableName, table);
+        tables.put(tableName.toLowerCase(), table);
     }
     
     /**
@@ -90,7 +90,7 @@ public final class ShardingSphereSchema {
      * @param tableName table name
      */
     public void remove(final String tableName) {
-        tables.remove(tableName);
+        tables.remove(tableName.toLowerCase());
     }
     
     /**
@@ -100,7 +100,7 @@ public final class ShardingSphereSchema {
      * @return contains table from table meta data or not
      */
     public boolean containsTable(final String tableName) {
-        return tables.containsKey(tableName);
+        return tables.containsKey(tableName.toLowerCase());
     }
     
     /**
@@ -111,7 +111,7 @@ public final class ShardingSphereSchema {
      * @return contains column name or not
      */
     public boolean containsColumn(final String tableName, final String columnName) {
-        return containsTable(tableName) && get(tableName).getColumns().containsKey(columnName);
+        return containsTable(tableName) && get(tableName).getColumns().containsKey(columnName.toLowerCase());
     }
     
     /**

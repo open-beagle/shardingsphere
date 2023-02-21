@@ -40,7 +40,9 @@ public final class MySQLQueryHeaderBuilder implements QueryHeaderBuilder {
     @Override
     public QueryHeader build(final QueryResultMetaData queryResultMetaData, final ShardingSphereDatabase database, final String columnName, final String columnLabel,
                              final int columnIndex, final LazyInitializer<DataNodeContainedRule> dataNodeContainedRule) throws SQLException {
-        String schemaName = null == database ? "" : database.getName();
+        // updated by pensong 2023年2月21日 schemaName转小写 解决大小写问题
+//        String schemaName = null == database ? "" : database.getName();
+        String schemaName = null == database ? "" : database.getName().toLowerCase();
         String actualTableName = queryResultMetaData.getTableName(columnIndex);
         String tableName;
         boolean primaryKey;
