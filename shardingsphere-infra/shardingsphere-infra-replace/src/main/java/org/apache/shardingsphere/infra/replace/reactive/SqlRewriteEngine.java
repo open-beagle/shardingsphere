@@ -17,6 +17,7 @@
 
 package org.apache.shardingsphere.infra.replace.reactive;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.kv.GetResponse;
@@ -33,8 +34,10 @@ import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
 import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -74,14 +77,18 @@ public class SqlRewriteEngine implements SqlReplace {
             try {
                 List<SqlRewrite> rewriteList = getSqlReWrite(dbName);
                 if (rewriteList.size() > 0) {
-                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
-                    if (rewriteMap.size() > 0) {
-                        for (Map.Entry<String, String> ruleSet : rewriteMap.entrySet()) {
-                            String distSql = reWriteSql(ruleSet.getKey(), ruleSet.getValue(), sql);
-                            if (!Objects.equals(sql, distSql)) {
-                                return distSql;
-                            }
-                        }
+//                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
+//                    if (rewriteMap.size() > 0) {
+//                        for (Map.Entry<String, String> ruleSet : rewriteMap.entrySet()) {
+//                            String distSql = reWriteSql(ruleSet.getKey(), ruleSet.getValue(), sql);
+//                            if (!Objects.equals(sql, distSql)) {
+//                                return distSql;
+//                            }
+//                        }
+//                    }
+                    for (SqlRewrite sqlRewrite : rewriteList) {
+                        String distSql = reWriteSql(sqlRewrite.getRawSql(), sqlRewrite.getDistSql(), sqlRewrite.getParamRel(), sql);
+                        return distSql;
                     }
                 }
                 return sql;
@@ -119,16 +126,23 @@ public class SqlRewriteEngine implements SqlReplace {
     
     /**
      * 根据正则重写SQL
-     * @param rawSql
-     * @param distSql
-     * @param sourceSql
+     * @param rawSql 原SQL
+     * @param distSql 目标SQL
+     * @param paramRel 参数关系
+     * @param sourceSql 需要改写的SQL
      * @return
      */
-    private static String reWriteSql(String rawSql, String distSql, String sourceSql) {
+    private static String reWriteSql(String rawSql, String distSql, String paramRel, String sourceSql) {
         String rawTrim = StringUtil.trimAllWhitespace(rawSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的模板: -> {}", rawTrim);
         String tempTrim = StringUtil.trimAllWhitespace(sourceSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的SQL: -> {}", tempTrim);
+
+        JSONArray paramRelArray = null;
+        if(StringUtils.isNotBlank(paramRel)) {
+            paramRelArray = JSONArray.parseArray(paramRel);
+        }
+
         boolean matches;
         boolean isHaveParam;
         if (rawTrim.contains("?")) {
@@ -161,7 +175,9 @@ public class SqlRewriteEngine implements SqlReplace {
                 StringBuffer sb = new StringBuffer();
                 int index = 0;
                 while (matcher.find()) {
-                    matcher.appendReplacement(sb, paramList.get(index++));
+                    String param = Objects.nonNull(paramRelArray) ? paramList.get(paramRelArray.getInteger(index) - 1) : paramList.get(index);
+                    matcher.appendReplacement(sb, param);
+                    index++;
                 }
                 matcher.appendTail(sb);
                 String targetSql = sb.toString();

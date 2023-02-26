@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - dev-pengsong
+    - dev-gy
 
 volumes:
   - name: docker
@@ -88,7 +88,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/beagle-xc-dbproxy
-      version: '5.1.2'
+      version: '5.1.2-gy'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -106,7 +106,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/beagle-xc-dbproxy
-      version: '5.1.2'
+      version: '5.1.2-gy'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -119,8 +119,8 @@ steps:
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker-manifest:1.0
     settings:
       platforms: linux/amd64,linux/arm64
-      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-ARCH
-      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2
+      template: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-gy-ARCH
+      target: registry.cn-qingdao.aliyuncs.com/wod/awecloud-dbproxy:5.1.2-gy
       username:
         from_secret: REGISTRY_USER_ALIYUN
       password:

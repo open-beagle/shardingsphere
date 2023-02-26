@@ -45,6 +45,10 @@ public class SqlRewrite extends Base {
      */
     private String distSql;
     /**
+     * 参数关系
+     */
+    private String paramRel;
+    /**
      * 类型
      */
     private String type;
