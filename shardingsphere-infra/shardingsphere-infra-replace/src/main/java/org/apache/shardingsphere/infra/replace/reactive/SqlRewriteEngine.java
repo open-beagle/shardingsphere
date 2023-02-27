@@ -178,6 +178,7 @@ public class SqlRewriteEngine implements SqlReplace {
                 int index = 0;
                 while (matcher.find()) {
                     String param = Objects.nonNull(paramRelArray) ? paramList.get(paramRelArray.getInteger(index) - 1) : paramList.get(index);
+                    param = Matcher.quoteReplacement(param);
                     matcher.appendReplacement(sb, param);
                     index++;
                 }
