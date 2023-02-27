@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.replace.SqlReplace;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
 import org.apache.shardingsphere.infra.replace.model.DataBaseInfo;
-import org.apache.shardingsphere.infra.replace.model.SouthDatabase;
 import org.apache.shardingsphere.infra.replace.model.SqlRewrite;
 import org.apache.shardingsphere.infra.replace.util.StringUtil;
 import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
@@ -114,12 +113,13 @@ public class SqlRewriteEngine implements SqlReplace {
             response.getKvs().forEach(item -> {
                 SqlRewrite rewrite = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlRewrite.class);
                 if (Objects.equals(rewrite.getInstanceId(), SqlRewriteEngine.INSTANCE_ID)) {
-                    if (Objects.nonNull(rewrite.getSouthDatabaseId())) {
-                        SouthDatabase southDatabase = JetcdClientUtil.getSingleObject(EtcdKey.SQL_SOUTH_DATABASE + rewrite.getSouthDatabaseId(), SouthDatabase.class);
-                        if (Objects.nonNull(southDatabase) && StringUtils.equalsIgnoreCase(southDatabase.getName(), dbName)) {
-                            result.add(rewrite);
-                        }
-                    }
+//                    if (Objects.nonNull(rewrite.getSouthDatabaseId())) {
+//                        SouthDatabase southDatabase = JetcdClientUtil.getSingleObject(EtcdKey.SQL_SOUTH_DATABASE + rewrite.getSouthDatabaseId(), SouthDatabase.class);
+//                        if (Objects.nonNull(southDatabase) && StringUtils.equalsIgnoreCase(southDatabase.getName(), dbName)) {
+//                            result.add(rewrite);
+//                        }
+//                    }
+                    result.add(rewrite);
                 }
             });
         }
