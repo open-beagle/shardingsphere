@@ -54,6 +54,8 @@ public class SqlRewriteEngine implements SqlReplace {
     
     private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
+    public static final String SQL_SEPARATOR = "<DB_PROXY_SQL_SEPARATOR>";
+    
     @Override
     public String replace(String sql, Object obj) {
         if (Objects.nonNull(obj)) {
@@ -159,15 +161,15 @@ public class SqlRewriteEngine implements SqlReplace {
         if (matches) {
             if (isHaveParam) {
                 String replaceRegex = "\\?";
-                String[] split = rawTrim.split(replaceRegex);
-                String paramStr = tempTrim;
+                String[] split = rawSql.split(replaceRegex);
+                String paramStr = sourceSql;
                 for (String str : split) {
                     int begin = paramStr.indexOf(str);
                     String start = paramStr.substring(0, begin);
                     String end = paramStr.substring(begin + str.length());
-                    paramStr = start + " " + end;
+                    paramStr = start + SQL_SEPARATOR + end;
                 }
-                List<String> paramList = Stream.of(paramStr.split(" ")).collect(Collectors.toList());
+                List<String> paramList = Stream.of(paramStr.split(SQL_SEPARATOR)).collect(Collectors.toList());
                 paramList.removeIf(StringUtils::isEmpty);
                 log.info("参数: -> {}", paramList);
                 Pattern pattern = Pattern.compile(replaceRegex);
