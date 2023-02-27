@@ -161,7 +161,9 @@ public class SqlRewriteEngine implements SqlReplace {
                 StringBuffer sb = new StringBuffer();
                 int index = 0;
                 while (matcher.find()) {
-                    matcher.appendReplacement(sb, paramList.get(index++));
+                    String param = paramList.get(index++);
+                    param = Matcher.quoteReplacement(param);
+                    matcher.appendReplacement(sb, param);
                 }
                 matcher.appendTail(sb);
                 String targetSql = sb.toString();
