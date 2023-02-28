@@ -94,15 +94,11 @@ public class SqlRewriteEngine implements SqlReplace {
 //                     }
                     for (int count = 0; count < rewriteList.size(); count++) {
                         log.info("SQL改写规则遍历次数为: -> {}", count);
-                        String distSql = "";
-                        try{
-                            SqlRewrite sqlRewrite = rewriteList.get(count);
-                            distSql = reWriteSql(sqlRewrite.getRawSql(), sqlRewrite.getDistSql(), sqlRewrite.getParamRel(), sql);
-                        }catch (Exception ex){
-                            log.error("SQL改写规则遍历异常: -> {}", ex.getMessage());
-                            ex.printStackTrace();
-                        }
-                        return distSql;
+                        SqlRewrite sqlRewrite = rewriteList.get(count);
+                        String distSql = reWriteSql(sqlRewrite.getRawSql(), sqlRewrite.getDistSql(), sqlRewrite.getParamRel(), sql);
+                        if (!Objects.equals(sql, distSql)) {
+                           return distSql;
+                       }
                     }
                 }
                 return sql;
