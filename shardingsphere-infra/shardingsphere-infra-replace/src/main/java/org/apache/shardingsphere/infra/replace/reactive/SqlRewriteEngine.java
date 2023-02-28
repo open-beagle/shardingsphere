@@ -48,13 +48,13 @@ import java.util.stream.Stream;
  */
 @Slf4j
 public class SqlRewriteEngine implements SqlReplace {
-    
+
     private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
-    
+
     private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
     public static final String SQL_SEPARATOR = "<DB_PROXY_SQL_SEPARATOR>";
-    
+
     @Override
     public String replace(String sql, Object obj) {
         if (Objects.nonNull(obj)) {
@@ -62,12 +62,12 @@ public class SqlRewriteEngine implements SqlReplace {
         }
         return sql;
     }
-    
+
     @Override
     public SQLReplaceTypeEnum getType() {
         return SQLReplaceTypeEnum.REWRITE;
     }
-    
+
     /**
      * 重写SQL
      * @param dbName
@@ -77,6 +77,7 @@ public class SqlRewriteEngine implements SqlReplace {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             try {
                 List<SqlRewrite> rewriteList = getSqlReWrite(dbName);
+                log.info("获取实例{}的SQL改写规则条数为: -> {}", INSTANCE_ID, rewriteList.size());
                 if (rewriteList.size() > 0) {
 //                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
 //                    if (rewriteMap.size() > 0) {
@@ -99,7 +100,7 @@ public class SqlRewriteEngine implements SqlReplace {
         }
         return sql;
     }
-    
+
     /**
      * 获取SQL重写规则
      * @param dbName
@@ -125,7 +126,7 @@ public class SqlRewriteEngine implements SqlReplace {
         }
         return result;
     }
-    
+
     /**
      * 根据正则重写SQL
      * @param rawSql 原SQL
@@ -192,7 +193,7 @@ public class SqlRewriteEngine implements SqlReplace {
         }
         return sourceSql;
     }
-    
+
     /**
      * 构建数据库连接信息对象
      * @param connectionUrl
@@ -208,7 +209,7 @@ public class SqlRewriteEngine implements SqlReplace {
         String dbName = portSplit[1];
         return new DataBaseInfo(host, port, dbName);
     }
-    
+
     /**
      * 获取匹配正则
      * @param sql
