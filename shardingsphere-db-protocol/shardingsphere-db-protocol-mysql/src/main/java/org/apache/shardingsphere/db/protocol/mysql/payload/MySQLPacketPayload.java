@@ -19,17 +19,26 @@ package org.apache.shardingsphere.db.protocol.mysql.payload;
 
 import com.google.common.base.Strings;
 import io.netty.buffer.ByteBuf;
+import io.netty.util.internal.StringUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.db.protocol.payload.PacketPayload;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * MySQL payload operation for MySQL packet data types.
  *
  * @see <a href="https://dev.mysql.com/doc/internals/en/describing-packets.html">describing packets</a>
  */
+@Slf4j
 @RequiredArgsConstructor
 @Getter
 public final class MySQLPacketPayload implements PacketPayload {
@@ -436,7 +445,8 @@ public final class MySQLPacketPayload implements PacketPayload {
     public String readStringEOF() {
         byte[] result = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(result);
-        return new String(result, charset);
+//        return new String(result, charset);
+        return readSql(result);
     }
     
     /**
@@ -471,5 +481,99 @@ public final class MySQLPacketPayload implements PacketPayload {
     @Override
     public void close() {
         byteBuf.release();
+    }
+
+
+    /**
+     * 匹配 插入/修改SQL 中含有 _binary开头的 二进制
+     */
+    private static final String REGEX_BINARY = "^(insert|update).*_binary'.*'.*";
+    /**
+     * 匹配 插入/修改SQL 中含有 x开头的 二进制
+     */
+    private static final String REGEX_X = "^(insert|update).*x'.*'.*";
+
+    public String readSql(byte[] bytes) {
+        try {
+            if (isBinary(bytes, REGEX_BINARY)) {
+                return handleBinary(bytes, REGEX_BINARY);
+            } else if (isBinary(bytes, REGEX_X)) {
+                return handleBinary(bytes, REGEX_X);
+            } else {
+                return new String(bytes, charset);
+            }
+        } catch (Exception e) {
+            log.error("MySql handle sql package error: ", e);
+            return new String(bytes, charset);
+        }
+    }
+
+    /**
+     * 校验是否是 INSERT UPDATE 的SQL 并且 包含二进制数据
+     * @param bytes sql字节
+     * @param regex 校验正则
+     * @return 是否是 INSERT UPDATE 的SQL 并且 包含二进制数据
+     */
+    public boolean isBinary(byte[] bytes, String regex) {
+        String sql = new String(bytes, charset);
+        if(!StringUtil.isNullOrEmpty(sql)) {
+            sql = sql.toLowerCase();
+            Pattern pattern = Pattern.compile(regex, Pattern.DOTALL|Pattern.MULTILINE);
+            Matcher matcher = pattern.matcher(sql);
+            return matcher.matches();
+        }
+        return false;
+    }
+
+    public String handleBinary(byte[] bytes, String regex) {
+        if(Objects.equals(regex, REGEX_BINARY)) {
+            return handleBinarySql(bytes, "_binary");
+        } else if(Objects.equals(regex, REGEX_X)) {
+            return handleBinarySql(bytes, "x");
+        } else {
+            return new String(bytes, charset);
+        }
+    }
+
+    public String handleBinarySql(byte[] bytes, String binaryStr) {
+        String sql = new String(bytes, StandardCharsets.ISO_8859_1);
+        String regex = "(?<="+ binaryStr +"').*?(?=')";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL|Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(sql.toLowerCase());
+        StringBuilder sb = new StringBuilder();
+        List<String> hexList = new ArrayList<>();
+        while (matcher.find()) {
+            String binary = matcher.group();
+            log.info("");
+            log.info(" ========= binary: {}", binary);
+            log.info("");
+            byte[] binaryBytes = binary.getBytes(StandardCharsets.ISO_8859_1);
+            String hexString = "0x" + getHexString(binaryBytes);
+            matcher.appendReplacement(sb, hexString);
+            hexList.add(hexString);
+        }
+        matcher.appendTail(sb);
+
+        sql = sb.toString();
+        // 移除_binary''
+        for (String hexString : hexList) {
+            int index = sql.indexOf(binaryStr + "'" + hexString + "'");
+            String frontSql = sql.substring(0, index);
+            String backSql = sql.substring(index + binaryStr.length() + 1).replaceFirst("'", "");
+            sql = frontSql + backSql;
+        }
+        return new String(sql.getBytes(StandardCharsets.ISO_8859_1), charset);
+    }
+
+    public static String getHexString(byte[] bytes){
+        char[] digit = { '0', '1', '2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+        char[] arr = new char[2];
+        StringBuilder sb = new StringBuilder();
+        for (byte mByte : bytes) {
+            arr[0] = digit[(mByte>>>4)&0X0F];
+            arr[1] = digit[mByte&0X0F];
+            sb.append(new String(arr));
+        }
+        return sb.toString();
     }
 }

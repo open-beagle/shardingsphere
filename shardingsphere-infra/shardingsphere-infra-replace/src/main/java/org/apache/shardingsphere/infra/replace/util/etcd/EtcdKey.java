@@ -23,11 +23,11 @@ package org.apache.shardingsphere.infra.replace.util.etcd;
 public interface EtcdKey {
     
     /**
-     * SQL监控
+     * 南向数据库
      */
     String SQL_SOUTH_DATABASE = "PRD_SOUTH_DATABASE-";
     /**
-     * SQL监控
+     * 北向数据库
      */
     String SQL_NORTH_DATABASE = "PRD_NORTH_DATABASE-";
     /**
@@ -42,4 +42,8 @@ public interface EtcdKey {
      * SQL转换规则
      */
     String SQL_CONVERT = "PRD_SQL_CONVERT-";
+    /**
+     * 数据库类型
+     */
+    String SQL_DATABASE_TYPE = "PRD_DATABASE_TYPE-";
 }

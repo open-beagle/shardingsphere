@@ -38,7 +38,10 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -90,6 +93,8 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
             // 再进行SQL重写
             distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName());
+            // 二进制数据转换
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, SQLStrReplaceTriggerModeEnum.BACK_END);
 
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 

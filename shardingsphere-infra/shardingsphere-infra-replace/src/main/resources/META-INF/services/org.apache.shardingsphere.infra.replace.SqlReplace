@@ -16,3 +16,4 @@
 #
 org.apache.shardingsphere.infra.replace.reactive.SqlRewriteEngine
 org.apache.shardingsphere.infra.replace.reactive.SqlStrReplaceEngine
+org.apache.shardingsphere.infra.replace.reactive.SqlBinaryReplaceEngine
