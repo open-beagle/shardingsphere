@@ -96,6 +96,8 @@ public class SqlRewriteEngine implements SqlReplace {
                         log.info("SQL改写规则遍历次数为: -> {}", count);
                         SqlRewrite sqlRewrite = rewriteList.get(count);
                         String distSql = reWriteSql(sqlRewrite.getRawSql(), sqlRewrite.getDistSql(), sqlRewrite.getParamRel(), sql);
+                        log.info("distSql为: -> {}", distSql);
+                        log.info("sql为: -> {}", sql);
                         if (!Objects.equals(sql, distSql)) {
                            return distSql;
                        }
