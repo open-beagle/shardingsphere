@@ -161,8 +161,8 @@ public class SqlRewriteEngine implements SqlReplace {
         if (matches) {
             if (isHaveParam) {
                 String replaceRegex = "\\?";
-                String[] split = rawSql.split(replaceRegex);
-                String paramStr = sourceSql;
+                String[] split = rawSql.replaceAll("\\s+", " ").split(replaceRegex);
+                String paramStr = sourceSql.replaceAll("\\s+", " ");
                 for (String str : split) {
                     int begin = paramStr.indexOf(str);
                     String start = paramStr.substring(0, begin);
