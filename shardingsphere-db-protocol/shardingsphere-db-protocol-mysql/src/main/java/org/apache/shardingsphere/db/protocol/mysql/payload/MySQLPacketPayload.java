@@ -529,7 +529,7 @@ public final class MySQLPacketPayload implements PacketPayload {
         if(Objects.equals(regex, REGEX_BINARY)) {
             return handleBinarySql(bytes, "_binary");
         } else if(Objects.equals(regex, REGEX_X)) {
-            return handleBinarySql(bytes, "x");
+            return handleXSql(bytes, "x");
         } else {
             return new String(bytes, charset);
         }
@@ -544,9 +544,7 @@ public final class MySQLPacketPayload implements PacketPayload {
         List<String> hexList = new ArrayList<>();
         while (matcher.find()) {
             String binary = matcher.group();
-            log.info("");
             log.info(" ========= binary: {}", binary);
-            log.info("");
             byte[] binaryBytes = binary.getBytes(StandardCharsets.ISO_8859_1);
             String hexString = "0x" + getHexString(binaryBytes);
             matcher.appendReplacement(sb, hexString);
@@ -556,6 +554,33 @@ public final class MySQLPacketPayload implements PacketPayload {
 
         sql = sb.toString();
         // 移除_binary''
+        for (String hexString : hexList) {
+            int index = sql.indexOf(binaryStr + "'" + hexString + "'");
+            String frontSql = sql.substring(0, index);
+            String backSql = sql.substring(index + binaryStr.length() + 1).replaceFirst("'", "");
+            sql = frontSql + backSql;
+        }
+        return new String(sql.getBytes(StandardCharsets.ISO_8859_1), charset);
+    }
+
+    public String handleXSql(byte[] bytes, String binaryStr) {
+        String sql = new String(bytes, StandardCharsets.ISO_8859_1);
+        String regex = "(?<="+ binaryStr +"').*?(?=')";
+        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL|Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(sql.toLowerCase());
+        StringBuilder sb = new StringBuilder();
+        List<String> hexList = new ArrayList<>();
+        while (matcher.find()) {
+            String binary = matcher.group();
+            log.info(" ========= binary: {}", binary);
+            String hexString = "0x" + binary;
+            matcher.appendReplacement(sb, hexString);
+            hexList.add(hexString);
+        }
+        matcher.appendTail(sb);
+
+        sql = sb.toString();
+        // 移除x''
         for (String hexString : hexList) {
             int index = sql.indexOf(binaryStr + "'" + hexString + "'");
             String frontSql = sql.substring(0, index);

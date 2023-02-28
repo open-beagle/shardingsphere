@@ -44,8 +44,8 @@ import java.util.Objects;
 public class SqlBinaryReplaceEngine implements SqlReplace {
     
     private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
-    
-    private static final String INSTANCE_ID = "xc7e97a5b5e4a849";
+
+    private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
 
     @Override
