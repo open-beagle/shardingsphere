@@ -90,6 +90,8 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
             // 再进行SQL重写
             distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName());
+            // 16进制数据重写
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, SQLStrReplaceTriggerModeEnum.BACK_END);
 
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
