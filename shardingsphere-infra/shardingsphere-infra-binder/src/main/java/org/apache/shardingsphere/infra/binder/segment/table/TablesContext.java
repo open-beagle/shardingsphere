@@ -79,8 +79,13 @@ public final class TablesContext {
                 SimpleTableSegment simpleTableSegment = (SimpleTableSegment) each;
                 tables.add(simpleTableSegment);
                 tableNames.add(simpleTableSegment.getTableName().getIdentifier().getValue());
-                simpleTableSegment.getOwner().ifPresent(owner -> schemaNames.add(owner.getIdentifier().getValue()));
-                findDatabaseName(simpleTableSegment, databaseType).ifPresent(databaseNames::add);
+                // update by pengsong 日期 兼容SQL语句中的（数据库.表）大小写
+//                simpleTableSegment.getOwner().ifPresent(owner -> schemaNames.add(owner.getIdentifier().getValue()));
+//                findDatabaseName(simpleTableSegment, databaseType).ifPresent(databaseNames::add);
+                simpleTableSegment.getOwner().ifPresent(owner -> schemaNames.add(owner.getIdentifier().getValue().toLowerCase()));
+                findDatabaseName(simpleTableSegment, databaseType).ifPresent(databaseName -> {
+                    databaseNames.add(databaseName.toLowerCase());
+                });
             }
             if (each instanceof SubqueryTableSegment) {
                 subqueryTables.putAll(createSubqueryTables(subqueryContexts, (SubqueryTableSegment) each));
