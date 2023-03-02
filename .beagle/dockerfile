@@ -18,5 +18,4 @@ COPY .tmp/oscarJDBC8.jar ${LOCAL_PATH}/ext-lib/oscarJDBC8.jar
 COPY .tmp/gbasedbtjdbc.jar ${LOCAL_PATH}/ext-lib/gbasedbtjdbc.jar
 COPY .tmp/kingbase8-8.6.0.jar ${LOCAL_PATH}/ext-lib/kingbase8-8.6.0.jar
 
-# ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT} && tail -f ${LOCAL_PATH}/logs/stdout.log
-ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT}
+ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT} && tail -f ${LOCAL_PATH}/logs/stdout.log
