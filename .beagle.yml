@@ -52,6 +52,7 @@ steps:
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc.jar > .tmp/gbasedbtjdbc.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/kingbase8-8.6.0.jar > .tmp/kingbase8-8.6.0.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/HikariCP-3.4.2.jar > .tmp/HikariCP-3.4.2.jar
 
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
@@ -59,6 +60,7 @@ steps:
       - mvn install:install-file "-Dfile=.tmp/oscarJDBC8.jar" "-DgroupId=com.esen.jdbc" "-DartifactId=oscarJDBC" "-Dversion=8" "-Dpackaging=jar"
       - mvn install:install-file "-Dfile=.tmp/gbasedbtjdbc.jar" "-DgroupId=com.gbase" "-DartifactId=ifxjdbc" "-Dversion=8s" "-Dpackaging=jar"
       - mvn install:install-file "-Dfile=.tmp/kingbase8-8.6.0.jar" "-DgroupId=com.kingbase8" "-DartifactId=kingbase8" "-Dversion=8.6.0" "-Dpackaging=jar"
+      - mvn install:install-file "-Dfile=E:/HikariCP-3.4.2.jar" "-DgroupId=com.zaxxer" "-DartifactId=HikariCP" "-Dversion=3.4.2" "-Dpackaging=jar"
       - cd $DRONE_WORKSPACE/shardingsphere-infra
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-kernel/shardingsphere-transaction/shardingsphere-transaction-type/shardingsphere-transaction-xa/shardingsphere-transaction-xa-core
