@@ -32,7 +32,11 @@ public enum SQLReplaceTypeEnum {
     /**
      * SQL 重写
      */
-    REWRITE("REWRITE", "SQL 重写");
+    REWRITE("REWRITE", "SQL 重写"),
+    /**
+     * 二进制 重写
+     */
+    BINARY("BINARY", "二进制 重写");
     
     /**
      * 编码

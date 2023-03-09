@@ -31,6 +31,7 @@ import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,15 +63,15 @@ public class SqlStrReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
-//            Map<String, String> replaceMap = sqlConvert.stream().collect(Collectors.toMap(SqlConvert::getRaw, SqlConvert::getDist, (o1, o2) -> o2));
-//            if (replaceMap.size() > 0) {
-//                for (Map.Entry<String, String> ruleSet : replaceMap.entrySet()) {
-//                    sql = replace(ruleSet.getKey(), ruleSet.getValue(), sql);
-//                }
-//            }
-            if(sqlConvert != null && sqlConvert.size() > 0) {
+            if(sqlConvert.size() > 0) {
                 for (SqlConvert convert : sqlConvert) {
-                    sql = replace(convert.getRaw(), convert.getDist(), sql, convert.getIsRegular());
+                    String raw = convert.getRaw();
+                    String dist = convert.getDist();
+                    if(Objects.equals(convert.getIsBase64(), Boolean.TRUE)) {
+                        raw = (decode(raw));
+                        dist = (decode(dist));
+                    }
+                    sql = replace(raw, dist, sql, convert.getIsRegular());
                 }
             }
             return sql;
@@ -113,5 +114,26 @@ public class SqlStrReplaceEngine implements SqlReplace {
             });
         }
         return result;
+    }
+
+    /**
+     * Base64 解码
+     *
+     * @param encodeStr 编码后字符
+     * @return 解码后字符
+     */
+    private static String decode(String encodeStr) {
+        byte[] decodeBytes = Base64.getDecoder().decode(encodeStr);
+        return new String(decodeBytes);
+    }
+
+    /**
+     * Base64 编码
+     *
+     * @param str 原始字符
+     * @return 编码后字符
+     */
+    private static String encode(String str) {
+        return Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
     }
 }

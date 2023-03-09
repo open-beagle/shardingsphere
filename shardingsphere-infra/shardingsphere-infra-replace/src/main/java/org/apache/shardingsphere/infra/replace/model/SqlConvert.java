@@ -57,6 +57,10 @@ public class SqlConvert extends Base {
      */
     private Boolean isRegular;
     /**
+     * 是否是Base64
+     */
+    private Boolean isBase64;
+    /**
      * 触发模式 北向 - frontend 南向 - backend
      */
     private String triggerMode;

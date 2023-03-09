@@ -21,15 +21,25 @@ package org.apache.shardingsphere.infra.replace.util.etcd;
  * @author SmileCircle
  */
 public interface EtcdKey {
-    
+
     /**
-     * SQL监控
+     * 南向数据库key
      */
     String SQL_SOUTH_DATABASE = "PRD_SOUTH_DATABASE-";
     /**
-     * SQL监控
+     * 北向数据库key
      */
     String SQL_NORTH_DATABASE = "PRD_NORTH_DATABASE-";
+    /**
+     * 实例数据库类型key
+     */
+    String SQL_INSTANCE_DATABASE_TYPE = "PRD_INSTANCE_DATABASE_TYPE-";
+
+    /**
+     * 数据库类型
+     */
+    String SQL_DATABASE_TYPE = "PRD_DATABASE_TYPE-";
+
     /**
      * SQL监控
      */
@@ -37,9 +47,11 @@ public interface EtcdKey {
     /**
      * SQL改写
      */
-    String SQL_REWRITE = "PRD_SQL_REWRITE-";
+    String SQL_REWRITE= "PRD_SQL_REWRITE-";
     /**
      * SQL转换规则
      */
-    String SQL_CONVERT = "PRD_SQL_CONVERT-";
+    String SQL_CONVERT= "PRD_SQL_CONVERT-";
+
+    String LAST_SQL_TIME = "FLG_LAST_SQL_TIME";
 }
