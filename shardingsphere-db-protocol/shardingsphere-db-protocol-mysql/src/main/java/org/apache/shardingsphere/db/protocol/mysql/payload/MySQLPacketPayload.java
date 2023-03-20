@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.shardingsphere.db.protocol.payload.PacketPayload;
 
 import java.nio.charset.Charset;
@@ -436,7 +437,10 @@ public final class MySQLPacketPayload implements PacketPayload {
     public String readStringEOF() {
         byte[] result = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(result);
-        return new String(result, charset);
+        String sql = new String(result, charset);
+        sql = StringEscapeUtils.unescapeJava(sql);
+        return sql;
+
     }
     
     /**
