@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - dev-gy
+    - dev-gy-json
 
 volumes:
   - name: docker
