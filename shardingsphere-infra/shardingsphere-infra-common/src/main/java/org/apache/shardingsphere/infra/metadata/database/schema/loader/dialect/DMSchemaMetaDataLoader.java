@@ -106,6 +106,9 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         dataTypes.put("IMAGE", Types.LONGVARBINARY);
         dataTypes.put("DEC", Types.DECIMAL);
         dataTypes.put("NUMBER", Types.NUMERIC);
+        dataTypes.put("VARCHAR2", Types.VARCHAR);
+        dataTypes.put("NVARCHAR", Types.VARCHAR);
+        dataTypes.put("NCHAR", Types.VARCHAR);
     }
     
     private ColumnMetaData loadColumnMetaData(final Map<String, Integer> dataTypeMap, final ResultSet resultSet, final Collection<String> primaryKeys,
