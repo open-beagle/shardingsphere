@@ -109,6 +109,7 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         dataTypes.put("VARCHAR2", Types.VARCHAR);
         dataTypes.put("NVARCHAR", Types.VARCHAR);
         dataTypes.put("NCHAR", Types.VARCHAR);
+        dataTypes.put("DATETIME", Types.TIME);
     }
     
     private ColumnMetaData loadColumnMetaData(final Map<String, Integer> dataTypeMap, final ResultSet resultSet, final Collection<String> primaryKeys,

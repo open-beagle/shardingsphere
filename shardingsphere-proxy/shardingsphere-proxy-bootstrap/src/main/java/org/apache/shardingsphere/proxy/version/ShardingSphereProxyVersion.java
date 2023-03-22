@@ -68,7 +68,8 @@ public final class ShardingSphereProxyVersion {
         if (!"DM DBMS".equals(databaseServerInfo.getDatabaseName())
             && !"OSCAR".equals(databaseServerInfo.getDatabaseName())
             && !"GBase 8s Server".equals(databaseServerInfo.getDatabaseName())
-            && !"KingbaseES".equals(databaseServerInfo.getDatabaseName())) {
+            && !"KingbaseES".equals(databaseServerInfo.getDatabaseName())
+            && !"Oracle".equals(databaseServerInfo.getDatabaseName())) {
             DatabaseProtocolFrontendEngineFactory
                 .newInstance(DatabaseTypeEngine.getTrunkDatabaseType(databaseServerInfo.getDatabaseName()))
                 .setDatabaseVersion(databaseName, databaseServerInfo.getDatabaseVersion());
