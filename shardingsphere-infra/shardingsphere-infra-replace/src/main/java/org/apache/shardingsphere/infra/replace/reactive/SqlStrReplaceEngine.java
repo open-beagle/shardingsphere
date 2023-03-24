@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.options.GetOption;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.replace.SqlReplace;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
@@ -39,6 +40,7 @@ import java.util.Objects;
  * SQL 字符替换
  * @author SmileCircle
  */
+@Slf4j
 public class SqlStrReplaceEngine implements SqlReplace {
     
     private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
@@ -63,6 +65,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
+            log.info("sql字符替换之前：" + sql);
             if(sqlConvert.size() > 0) {
                 for (SqlConvert convert : sqlConvert) {
                     String raw = convert.getRaw();
@@ -71,9 +74,20 @@ public class SqlStrReplaceEngine implements SqlReplace {
                         raw = (decode(raw));
                         dist = (decode(dist));
                     }
+                    log.info("sql字符替换raw：" + raw);
+                    log.info("sql字符替换dist：" + dist);
+                    if(sql.contains(raw)){
+                        log.info("sql有更改");
+                    }else {
+                        log.info("sql没有更改");
+                    }
+
                     sql = replace(raw, dist, sql, convert.getIsRegular());
+
                 }
             }
+            log.info("sql字符替换之后sql：" + sql);
+
             return sql;
         }
         return sql;
