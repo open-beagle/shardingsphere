@@ -77,6 +77,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
      * @return
      */
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
+        long start = System.currentTimeMillis();
         if(Objects.equals(SQLStrReplaceTriggerModeEnum.FRONT_END, triggerMode)) {
             throw new RuntimeException("binary rewrite don't support of font-replace!");
         }
@@ -100,8 +101,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                 }
             }
         }
+        long end = System.currentTimeMillis();
+        log.info("=== Hex 耗时： {}====================",end - start);
         return sql;
     }
+
 
     /**
      * 校验是否是 INSERT UPDATE 的SQL 并且 包含二进制数据
