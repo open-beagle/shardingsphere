@@ -42,21 +42,21 @@ import java.util.Objects;
  */
 @Slf4j
 public class SqlStrReplaceEngine implements SqlReplace {
-    
+
     private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
-    
+
     private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
     @Override
     public String replace(String sql, Object obj) {
         return replaceSql(sql, (SQLStrReplaceTriggerModeEnum) obj);
     }
-    
+
     @Override
     public SQLReplaceTypeEnum getType() {
         return SQLReplaceTypeEnum.REPLACE;
     }
-    
+
     /**
      * 替换SQL
      * @param sql
@@ -108,7 +108,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
             return StringUtils.replacePattern(sourceSql, raw, dist);
         }
     }
-    
+
     /**
      * 获取SQL转换规则
      * @return
