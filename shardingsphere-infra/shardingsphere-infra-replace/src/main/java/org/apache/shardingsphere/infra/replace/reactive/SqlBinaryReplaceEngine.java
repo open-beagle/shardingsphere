@@ -17,20 +17,10 @@
 
 package org.apache.shardingsphere.infra.replace.reactive;
 
-import com.alibaba.fastjson.JSONObject;
-import io.etcd.jetcd.ByteSequence;
-import io.etcd.jetcd.KeyValue;
-import io.etcd.jetcd.kv.GetResponse;
-import io.etcd.jetcd.options.GetOption;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.replace.SqlReplace;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
-import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
-import org.apache.shardingsphere.infra.replace.model.DatabaseType;
-import org.apache.shardingsphere.infra.replace.model.SouthDatabase;
-import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
-import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -48,10 +38,6 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SqlBinaryReplaceEngine implements SqlReplace {
     
-    private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
-
-    private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
-
     /**
      * 匹配 插入/修改SQL 中含有 x开头的 二进制
      */
@@ -61,10 +47,12 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
      */
     private static final String REGEX_FIND_X_DATA = "(?<=x').*?(?=')";
 
+    private static final String ENABLE_BINARY_REPLACE = System.getenv("ENABLE_BINARY_REPLACE");
+
 
     @Override
     public String replace(String sql, Object obj) {
-        return replaceSql(sql, (SQLStrReplaceTriggerModeEnum) obj);
+        return replaceSql(sql, (String) obj);
     }
 
     @Override
@@ -82,32 +70,14 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
      * @param sql
      * @return
      */
-    private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
-        long start = System.currentTimeMillis();
-        if(Objects.equals(SQLStrReplaceTriggerModeEnum.FRONT_END, triggerMode)) {
-            throw new RuntimeException("binary rewrite don't support of font-replace!");
-        }
-        if(isHexSql(sql)) {
-            GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_SOUTH_DATABASE, StandardCharsets.UTF_8)).build();
-            GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_SOUTH_DATABASE, getOption);
-            if (Objects.nonNull(response)) {
-                SouthDatabase targetSouthDatabase = null;
-                for (KeyValue item : response.getKvs()) {
-                    SouthDatabase southDatabase = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SouthDatabase.class);
-                    if (Objects.equals(southDatabase.getInstanceId(), SqlBinaryReplaceEngine.INSTANCE_ID)) {
-                        targetSouthDatabase = southDatabase;
-                        break;
-                    }
-                }
-                if(Objects.nonNull(targetSouthDatabase)) {
-                    DatabaseType northDatabaseType = JetcdClientUtil.getSingleObject(EtcdKey.SQL_DATABASE_TYPE + targetSouthDatabase.getDatabaseTypeId(), DatabaseType.class);
-                    if(Objects.nonNull(northDatabaseType) && Objects.equals(northDatabaseType.getDriverClass(), "com.kingbase8.Driver")) {
-                        return handleHexString(sql);
-                    }
+    private static String replaceSql(String sql, String databaseType) {
+        if(!Objects.equals(ENABLE_BINARY_REPLACE, "false")) {
+            if(isHexSql(sql)) {
+                if(Objects.equals(databaseType, "kingbase8")) {
+                    return handleHexString(sql);
                 }
             }
         }
-        long end = System.currentTimeMillis();
         return sql;
     }
 

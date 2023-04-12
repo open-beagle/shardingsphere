@@ -157,7 +157,8 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
         // 再进行SQL重写
         distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName());
         // 16进制数据重写
-        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, SQLStrReplaceTriggerModeEnum.BACK_END);
+        String type = getDatabase().getResource().getDatabaseType().getType();
+        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type);
         logicSQL.setSql(distSql);
 
 
