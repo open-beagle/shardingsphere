@@ -72,6 +72,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
         return SQLReplaceTypeEnum.BINARY;
     }
 
+    @Override
+    public void init() {
+
+    }
+
     /**
      * 替换SQL 中的X''
      * @param sql
@@ -103,7 +108,6 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
             }
         }
         long end = System.currentTimeMillis();
-        log.info("=== Hex 耗时： {}====================",end - start);
         return sql;
     }
 

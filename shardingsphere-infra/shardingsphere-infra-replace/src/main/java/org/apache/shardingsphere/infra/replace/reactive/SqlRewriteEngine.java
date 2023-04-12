@@ -33,10 +33,11 @@ import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
 import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -53,7 +54,12 @@ public class SqlRewriteEngine implements SqlReplace {
 
     private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
 
-    public static final String SQL_SEPARATOR = "<DB_PROXY_SQL_SEPARATOR>";
+    private static final String SQL_SEPARATOR = "<DB_PROXY_SQL_SEPARATOR>";
+
+    private static final List<SqlRewrite> SQL_REWRITE_RULE = new ArrayList<>();
+    private static final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public String replace(String sql, Object obj) {
@@ -76,19 +82,9 @@ public class SqlRewriteEngine implements SqlReplace {
     public static String reWriteSql(String sql, final String dbName) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
             try {
-                List<SqlRewrite> rewriteList = getSqlReWrite(dbName);
-                log.info("获取实例{}的SQL改写规则条数为: -> {}", INSTANCE_ID, rewriteList.size());
-                if (rewriteList.size() > 0) {
-//                    Map<String, String> rewriteMap = rewriteList.stream().collect(Collectors.toMap(SqlRewrite::getRawSql, SqlRewrite::getDistSql, (o1, o2) -> o2));
-//                    if (rewriteMap.size() > 0) {
-//                        for (Map.Entry<String, String> ruleSet : rewriteMap.entrySet()) {
-//                            String distSql = reWriteSql(ruleSet.getKey(), ruleSet.getValue(), sql);
-//                            if (!Objects.equals(sql, distSql)) {
-//                                return distSql;
-//                            }
-//                        }
-//                    }
-                    for (SqlRewrite sqlRewrite : rewriteList) {
+                List<SqlRewrite> sqlRewriteList = getSqlRewriteList();
+                if (sqlRewriteList.size() > 0) {
+                    for (SqlRewrite sqlRewrite : sqlRewriteList) {
                         String distSql = reWriteSql(sqlRewrite.getRawSql(), sqlRewrite.getDistSql(), sqlRewrite.getParamRel(), sql);
                         if (!Objects.equals(sql, distSql)) {
                             return distSql;
@@ -103,30 +99,51 @@ public class SqlRewriteEngine implements SqlReplace {
         return sql;
     }
 
+
+    @Override
+    public void init() {
+        if(StringUtils.isNotBlank(INSTANCE_ID)) {
+            SqlRewriteEngine.loadSqlReWrite();
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                try {
+                    SqlRewriteEngine.loadSqlReWrite();
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }, 10L, 30L, TimeUnit.SECONDS);
+        }
+    }
+
     /**
      * 获取SQL重写规则
-     * @param dbName
      * @return
      */
-    private static List<SqlRewrite> getSqlReWrite(String dbName) {
-        List<SqlRewrite> result = new ArrayList<>();
-        GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_REWRITE, StandardCharsets.UTF_8)).build();
-        GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_REWRITE, getOption);
-        if (Objects.nonNull(response)) {
-            response.getKvs().forEach(item -> {
-                SqlRewrite rewrite = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlRewrite.class);
-                if (Objects.equals(rewrite.getInstanceId(), SqlRewriteEngine.INSTANCE_ID)) {
-//                    if (Objects.nonNull(rewrite.getSouthDatabaseId())) {
-//                        SouthDatabase southDatabase = JetcdClientUtil.getSingleObject(EtcdKey.SQL_SOUTH_DATABASE + rewrite.getSouthDatabaseId(), SouthDatabase.class);
-//                        if (Objects.nonNull(southDatabase) && StringUtils.equalsIgnoreCase(southDatabase.getName(), dbName)) {
-//                            result.add(rewrite);
-//                        }
-//                    }
-                    result.add(rewrite);
-                }
-            });
+    private static void loadSqlReWrite() {
+        lock.writeLock().lock();
+        try {
+            SQL_REWRITE_RULE.clear();
+            GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_REWRITE, StandardCharsets.UTF_8)).build();
+            GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_REWRITE, getOption);
+            if (Objects.nonNull(response)) {
+                response.getKvs().forEach(item -> {
+                    SqlRewrite rewrite = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlRewrite.class);
+                    if (Objects.equals(rewrite.getInstanceId(), SqlRewriteEngine.INSTANCE_ID)) {
+                        SQL_REWRITE_RULE.add(rewrite);
+                    }
+                });
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
-        return result;
+    }
+
+    private static List<SqlRewrite> getSqlRewriteList() {
+        lock.readLock().lock();
+        try {
+            return SQL_REWRITE_RULE;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**

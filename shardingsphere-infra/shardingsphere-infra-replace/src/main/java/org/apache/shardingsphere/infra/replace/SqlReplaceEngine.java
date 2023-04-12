@@ -34,9 +34,10 @@ public class SqlReplaceEngine {
     
     private static ConcurrentHashMap<String, SqlReplace> ENGINE = new ConcurrentHashMap<>(10);
     
-    static {
+    public static void init() {
         ServiceLoader<SqlReplace> loader = ServiceLoader.load(SqlReplace.class);
         loader.forEach(engine -> {
+            engine.init();
             ENGINE.put(engine.getType().getCode(), engine);
             log.info("===> {} 已加载", engine.getType().getName());
         });

@@ -24,6 +24,7 @@ import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.DeleteOption;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.options.WatchOption;
 import io.etcd.jetcd.watch.WatchEvent;
 import io.grpc.stub.CallStreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -190,8 +191,21 @@ public class JetcdClientUtil {
                     });
         });
     }
+
+    public interface Callback {
+
+        /**
+         * 回调方法
+         *
+         * @param key
+         * @param value
+         * @return
+         */
+        void doCallback(String key, String value);
+
+    }
     
-    public static void watchKey(String watchKey) {
+    public static void watchKey(String watchKey, WatchOption watchOption, Callback callback) {
         try {
             // 先检查指定的key在etcd中是否存在
             // 查询条件中指定只返回key
@@ -209,15 +223,21 @@ public class JetcdClientUtil {
                         // 操作的键值对
                         KeyValue keyValue = watchEvent.getKeyValue();
                         // 如果是删除操作，就把该key的Watcher找出来close掉
-                        if (WatchEvent.EventType.DELETE.equals(eventType)
-                                && watcherMap.containsKey(watchKey)) {
+                        if (WatchEvent.EventType.DELETE.equals(eventType) && watcherMap.containsKey(watchKey)) {
+                            String key = keyValue.getKey().toString(UTF_8);
+                            callback.doCallback(key, null);
                             Watch.Watcher watcher = watcherMap.remove(watchKey);
                             watcher.close();
+                        } else if(WatchEvent.EventType.PUT.equals(eventType) && watcherMap.containsKey(watchKey)) {
+                            String key = keyValue.getKey().toString(UTF_8);
+                            String value = keyValue.getValue().toString(UTF_8);
+                            callback.doCallback(key, value);
                         }
                     });
                 });
+
                 // 添加监听
-                Watch.Watcher watcher = client.getWatchClient().watch(bytesOf(watchKey), listener);
+                Watch.Watcher watcher = client.getWatchClient().watch(bytesOf(watchKey), watchOption, listener);
                 // 将这个Watcher放入内存中保存，如果该key被删除就要将这个Watcher关闭
                 watcherMap.put(watchKey, watcher);
             }
