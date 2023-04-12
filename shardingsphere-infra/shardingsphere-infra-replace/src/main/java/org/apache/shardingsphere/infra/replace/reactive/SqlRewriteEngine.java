@@ -100,6 +100,9 @@ public class SqlRewriteEngine implements SqlReplace {
     }
 
 
+    /**
+     * 初始化
+     */
     @Override
     public void init() {
         if(StringUtils.isNotBlank(INSTANCE_ID)) {

@@ -39,5 +39,8 @@ public interface SqlReplace {
      */
     SQLReplaceTypeEnum getType();
 
+    /**
+     * 初始化
+     */
     void init();
 }
