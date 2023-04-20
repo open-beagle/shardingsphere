@@ -48,6 +48,7 @@ steps:
     commands:
       - rm -rf .tmp
       - mkdir -p .tmp
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/logback.xml > .tmp/logback.xml
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc_3.3.0_3.jar > .tmp/gbasedbtjdbc_3.3.0_3.jar
@@ -80,8 +81,6 @@ steps:
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
-      - cd ~
-      - cp $DRONE_WORKSPACE/shardingsphere-proxy/shardingsphere-proxy-bootstrap/target/classes/logback.xml .tmp/logback.xml
 
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
