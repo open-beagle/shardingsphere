@@ -80,6 +80,7 @@ steps:
       - cd $DRONE_WORKSPACE/shardingsphere-distribution/shardingsphere-proxy-distribution
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - tar -xzvf target/apache-shardingsphere-5.1.2-shardingsphere-proxy-bin.tar.gz -C target/
+      - cp $DRONE_WORKSPACE/shardingsphere-proxy/shardingsphere-proxy-bootstrap/target/classes/logback.xml .tmp/logback.xml
 
   - name: docker-amd64
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-docker:1.0
