@@ -48,7 +48,6 @@ steps:
     commands:
       - rm -rf .tmp
       - mkdir -p .tmp
-      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/logback.xml > .tmp/logback.xml
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar > .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc_3.3.0_3.jar > .tmp/gbasedbtjdbc_3.3.0_3.jar
