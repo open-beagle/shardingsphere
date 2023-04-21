@@ -101,11 +101,21 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * @return 替换后的SQL
      */
     private static String replace(String raw, String dist, String sourceSql, Boolean isRegular) {
+        String sql;
         if(Objects.isNull(isRegular) || Objects.equals(isRegular, false)) {
-            return StringUtils.replace(sourceSql, raw, dist);
+            sql = StringUtils.replace(sourceSql, raw, dist);
         } else {
-            return StringUtils.replacePattern(sourceSql, raw, dist);
+            sql = StringUtils.replacePattern(sourceSql, raw, dist);
         }
+        if(!Objects.equals(sql, sourceSql)) {
+            log.info("====================================== 命中规则:");
+            log.info("rule raw: -> {}", raw);
+            log.info("rule dist: -> {}", dist);
+            log.info("========");
+            log.info("before: -> {}", sourceSql);
+            log.info("after: -> {}", sql);
+        }
+        return sql;
     }
 
     @Override
