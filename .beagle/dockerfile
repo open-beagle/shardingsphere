@@ -16,6 +16,6 @@ ARG MYSQL_CONNECTOR_VERSION
 COPY .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar ${LOCAL_PATH}/ext-lib/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar
 COPY .tmp/oscarJDBC8.jar ${LOCAL_PATH}/ext-lib/oscarJDBC8.jar
 COPY .tmp/gbasedbtjdbc_3.3.0_3.jar ${LOCAL_PATH}/ext-lib/gbasedbtjdbc_3.3.0_3.jar
-COPY .tmp/kingbase8-8.6.0-0024.jar ${LOCAL_PATH}/ext-lib/kingbase8-8.6.0-0024.jar
+COPY .tmp/kingbase8-8.6.0-c7.jar ${LOCAL_PATH}/ext-lib/kingbase8-8.6.0-c7.jar
 
 ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT} && tail -f ${LOCAL_PATH}/logs/stdout.log
