@@ -49,10 +49,7 @@ import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.tcl.MySQ
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.tcl.MySQLUnlockStatement;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.tcl.MySQLXAStatement;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * TCL Statement SQL visitor for MySQL.
@@ -144,7 +141,15 @@ public final class MySQLTCLStatementSQLVisitor extends MySQLStatementSQLVisitor 
         MySQLXAStatement result = new MySQLXAStatement();
         result.setOp(ctx.getChild(1).getText().toUpperCase());
         if (null != ctx.xid()) {
-            result.setXid(ctx.xid().getText());
+            StringBuilder xid = new StringBuilder();
+            xid.append(ctx.xid().getText());
+            if (Objects.nonNull(ctx.xrow())) {
+                xid.append(",").append(ctx.xrow().getText());
+            }
+            if (Objects.nonNull(ctx.xcursor())) {
+                xid.append(",").append(ctx.xcursor().getText());
+            }
+            result.setXid(xid.toString());
         }
         return result;
     }

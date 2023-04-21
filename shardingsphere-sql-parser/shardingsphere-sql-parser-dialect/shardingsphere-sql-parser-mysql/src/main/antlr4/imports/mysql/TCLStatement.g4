@@ -65,10 +65,15 @@ releaseSavepoint
 
 xa
     : XA ((START | BEGIN) xid (JOIN | RESUME)?
+        | (START | BEGIN) xid COMMA_ xrow COMMA_ xcursor?
         | END xid (SUSPEND (FOR MIGRATE)?)?
+        | END xid COMMA_ xrow COMMA_ xcursor (SUSPEND (FOR MIGRATE)?)?
         | PREPARE xid
+        | PREPARE xid COMMA_ xrow COMMA_ xcursor
         | COMMIT xid (ONE PHASE)?
+        | COMMIT xid COMMA_ xrow COMMA_ xcursor (ONE PHASE)?
         | ROLLBACK xid
+        | ROLLBACK xid COMMA_ xrow COMMA_ xcursor
         | RECOVER (CONVERT XID)?
     )
     ;
@@ -90,6 +95,12 @@ lockOption
     ;
 
 xid
+    : gtrid=textString (COMMA_ bqual=textString (COMMA_ formatID=NCHAR_TEXT)?)?
+    ;
+xrow
+    : gtrid=textString (COMMA_ bqual=textString (COMMA_ formatID=NUMBER_)?)?
+    ;
+xcursor
     : gtrid=textString (COMMA_ bqual=textString (COMMA_ formatID=NUMBER_)?)?
     ;
 

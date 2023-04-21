@@ -20,13 +20,12 @@ package org.apache.shardingsphere.proxy.backend.text.transaction;
 import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.proxy.backend.response.header.ResponseHeader;
+import org.apache.shardingsphere.proxy.backend.response.header.update.UpdateResponseHeader;
 import org.apache.shardingsphere.proxy.backend.session.ConnectionSession;
 import org.apache.shardingsphere.proxy.backend.text.TextProtocolBackendHandler;
 import org.apache.shardingsphere.proxy.backend.text.data.impl.SchemaAssignedDatabaseBackendHandler;
-import org.apache.shardingsphere.sharding.merge.ddl.fetch.FetchOrderByValueQueuesHolder;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.tcl.TCLStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.tcl.XAStatement;
-import org.apache.shardingsphere.transaction.TransactionHolder;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -63,33 +62,47 @@ public final class TransactionXAHandler implements TextProtocolBackendHandler {
     
     @Override
     public ResponseHeader execute() throws SQLException {
+//        switch (tclStatement.getOp()) {
+//            case "START":
+//            case "BEGIN":
+//                /**
+//                 * we have to let session occupy the thread when doing xa transaction.
+//                 * according to https://dev.mysql.com/doc/refman/5.7/en/xa-states.html XA and local transactions are mutually exclusive
+//                 */
+//                if (connectionSession.getTransactionStatus().isInTransaction()) {
+//                    throw new SQLException("can not start in a Active transaction");
+//                }
+//                ResponseHeader header = backendHandler.execute();
+//                TransactionHolder.setInTransaction();
+//                connectionSession.getTransactionStatus().setManualXA(true);
+//                return header;
+//            case "END":
+//            case "PREPARE":
+//            case "RECOVER":
+//                return backendHandler.execute();
+//            case "COMMIT":
+//            case "ROLLBACK":
+//                try {
+//                    return backendHandler.execute();
+//                } finally {
+//                    connectionSession.getTransactionStatus().setManualXA(false);
+//                    TransactionHolder.clear();
+//                    FetchOrderByValueQueuesHolder.remove();
+//                }
+//            default:
+//                throw new SQLException("unrecognized XA statement " + tclStatement.getOp());
+//        }
+
         switch (tclStatement.getOp()) {
             case "START":
             case "BEGIN":
-                /**
-                 * we have to let session occupy the thread when doing xa transaction.
-                 * according to https://dev.mysql.com/doc/refman/5.7/en/xa-states.html XA and local transactions are mutually exclusive
-                 */
-                if (connectionSession.getTransactionStatus().isInTransaction()) {
-                    throw new SQLException("can not start in a Active transaction");
-                }
-                ResponseHeader header = backendHandler.execute();
-                TransactionHolder.setInTransaction();
-                connectionSession.getTransactionStatus().setManualXA(true);
-                return header;
             case "END":
             case "PREPARE":
-            case "RECOVER":
-                return backendHandler.execute();
             case "COMMIT":
             case "ROLLBACK":
-                try {
-                    return backendHandler.execute();
-                } finally {
-                    connectionSession.getTransactionStatus().setManualXA(false);
-                    TransactionHolder.clear();
-                    FetchOrderByValueQueuesHolder.remove();
-                }
+                return new UpdateResponseHeader(tclStatement);
+            case "RECOVER":
+                return backendHandler.execute();
             default:
                 throw new SQLException("unrecognized XA statement " + tclStatement.getOp());
         }
