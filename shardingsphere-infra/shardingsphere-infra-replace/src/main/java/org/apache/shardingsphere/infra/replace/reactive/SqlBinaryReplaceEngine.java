@@ -52,7 +52,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
 
     @Override
     public String replace(String sql, Object obj) {
-        return replaceSql(sql, (String) obj);
+        return replaceSql(sql, Objects.nonNull(obj) ? (String) obj : "");
     }
 
     @Override
@@ -73,7 +73,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, String databaseType) {
         if(!Objects.equals(ENABLE_BINARY_REPLACE, "false")) {
             if(isHexSql(sql)) {
-                if(Objects.equals(databaseType, "kingbase8")) {
+                if(Objects.equals(databaseType, "Kingbase8 JDBC Driver")) {
                     return handleHexString(sql);
                 }
             }
