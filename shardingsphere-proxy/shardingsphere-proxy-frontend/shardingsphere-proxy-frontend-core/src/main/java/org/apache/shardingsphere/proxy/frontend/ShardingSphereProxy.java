@@ -33,6 +33,7 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
+import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
 import org.apache.shardingsphere.proxy.backend.communication.vertx.VertxBackendDataSource;
 import org.apache.shardingsphere.proxy.backend.context.BackendExecutorContext;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
@@ -70,6 +71,7 @@ public final class ShardingSphereProxy {
         createEventLoopGroup();
         ServerBootstrap bootstrap = new ServerBootstrap();
         initServerBootstrap(bootstrap);
+        SqlReplaceEngine.init();
         return bootstrap.bind(port).sync();
     }
     

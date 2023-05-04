@@ -17,7 +17,6 @@
 
 package org.apache.shardingsphere.infra.binder.segment.table;
 
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.shardingsphere.infra.binder.segment.select.projection.impl.ColumnProjection;
@@ -34,16 +33,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.Sim
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.SubqueryTableSegment;
 import org.apache.shardingsphere.sql.parser.sql.common.segment.generic.table.TableSegment;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Tables context.
@@ -299,7 +289,7 @@ public final class TablesContext {
      * @return database name
      */
     public Optional<String> getDatabaseName() {
-        Preconditions.checkState(databaseNames.size() <= 1, "Can not support multiple different database.");
+//        Preconditions.checkState(databaseNames.size() <= 1, "Can not support multiple different database.");
         return databaseNames.isEmpty() ? Optional.empty() : Optional.of(databaseNames.iterator().next());
     }
     

@@ -35,6 +35,11 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 /**
  * SQL 字符替换
@@ -45,7 +50,12 @@ public class SqlStrReplaceEngine implements SqlReplace {
 
     private static final String INSTANCE_ENV_KEY = "INSTANCE_ID";
 
-    private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
+        private static final String INSTANCE_ID = System.getenv(INSTANCE_ENV_KEY);
+
+    private static final List<SqlConvert> SQL_CONVERT_RULE= new ArrayList<>();
+
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Override
     public String replace(String sql, Object obj) {
@@ -64,30 +74,19 @@ public class SqlStrReplaceEngine implements SqlReplace {
      */
     private static String replaceSql(String sql, SQLStrReplaceTriggerModeEnum triggerMode) {
         if (StringUtils.isNotBlank(INSTANCE_ID)) {
-            List<SqlConvert> sqlConvert = getSqlConvert(triggerMode);
-            log.info("sql字符替换之前：" + sql);
+            List<SqlConvert> sqlConvert = getSqlConvert();
             if(sqlConvert.size() > 0) {
-                for (SqlConvert convert : sqlConvert) {
+                List<SqlConvert> sqlConvertList = sqlConvert.stream().filter(item -> Objects.equals(triggerMode.getCode(), item.getTriggerMode())).collect(Collectors.toList());
+                for (SqlConvert convert : sqlConvertList) {
                     String raw = convert.getRaw();
                     String dist = convert.getDist();
                     if(Objects.equals(convert.getIsBase64(), Boolean.TRUE)) {
                         raw = (decode(raw));
                         dist = (decode(dist));
                     }
-                    log.info("sql字符替换raw：" + raw);
-                    log.info("sql字符替换dist：" + dist);
-                    if(sql.contains(raw)){
-                        log.info("sql有更改");
-                    }else {
-                        log.info("sql没有更改");
-                    }
-
                     sql = replace(raw, dist, sql, convert.getIsRegular());
-
                 }
             }
-            log.info("sql字符替换之后sql：" + sql);
-
             return sql;
         }
         return sql;
@@ -102,10 +101,34 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * @return 替换后的SQL
      */
     private static String replace(String raw, String dist, String sourceSql, Boolean isRegular) {
+        String sql;
         if(Objects.isNull(isRegular) || Objects.equals(isRegular, false)) {
-            return StringUtils.replace(sourceSql, raw, dist);
+            sql = StringUtils.replace(sourceSql, raw, dist);
         } else {
-            return StringUtils.replacePattern(sourceSql, raw, dist);
+            sql = StringUtils.replacePattern(sourceSql, raw, dist);
+        }
+        if(!Objects.equals(sql, sourceSql)) {
+            log.info("====================================== 命中规则:");
+            log.info("rule raw: -> {}", raw);
+            log.info("rule dist: -> {}", dist);
+            log.info("========");
+            log.info("before: -> {}", sourceSql);
+            log.info("after: -> {}", sql);
+        }
+        return sql;
+    }
+
+    @Override
+    public void init() {
+        if(StringUtils.isNotBlank(INSTANCE_ID)) {
+            loadSqlConvert();
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                try {
+                    SqlStrReplaceEngine.loadSqlConvert();
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }, 10L, 30L, TimeUnit.SECONDS);
         }
     }
 
@@ -113,21 +136,32 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * 获取SQL转换规则
      * @return
      */
-    private static List<SqlConvert> getSqlConvert(SQLStrReplaceTriggerModeEnum triggerMode) {
-        List<SqlConvert> result = new ArrayList<>();
-        GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_CONVERT, StandardCharsets.UTF_8)).build();
-        GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_CONVERT, getOption);
-        if (Objects.nonNull(response)) {
-            response.getKvs().forEach(item -> {
-                SqlConvert convert = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlConvert.class);
-                if (Objects.equals(convert.getInstanceId(), SqlStrReplaceEngine.INSTANCE_ID)) {
-                    if(Objects.nonNull(triggerMode) && Objects.equals(triggerMode.getCode(), convert.getTriggerMode())) {
-                        result.add(convert);
+    private static void loadSqlConvert() {
+        lock.writeLock().lock();
+        try {
+            SQL_CONVERT_RULE.clear();
+            GetOption getOption = GetOption.newBuilder().withPrefix(ByteSequence.from(EtcdKey.SQL_CONVERT, StandardCharsets.UTF_8)).build();
+            GetResponse response = JetcdClientUtil.getWithPrefix(EtcdKey.SQL_CONVERT, getOption);
+            if (Objects.nonNull(response)) {
+                response.getKvs().forEach(item -> {
+                    SqlConvert convert = JSONObject.parseObject(item.getValue().toString(StandardCharsets.UTF_8), SqlConvert.class);
+                    if (Objects.equals(convert.getInstanceId(), SqlStrReplaceEngine.INSTANCE_ID)) {
+                        SQL_CONVERT_RULE.add(convert);
                     }
-                }
-            });
+                });
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
-        return result;
+    }
+
+    private static List<SqlConvert> getSqlConvert() {
+        lock.readLock().lock();
+        try {
+            return SQL_CONVERT_RULE;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
