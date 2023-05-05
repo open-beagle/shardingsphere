@@ -101,6 +101,9 @@ public class SqlStrReplaceEngine implements SqlReplace {
      * @return 替换后的SQL
      */
     private static String replace(String raw, String dist, String sourceSql, Boolean isRegular) {
+        log.debug("---> raw : {}", raw);
+        log.debug("---> sourceSql : {}", sourceSql);
+        log.debug("--------------------------------------------------------------------------------------");
         String sql;
         if(Objects.isNull(isRegular) || Objects.equals(isRegular, false)) {
             sql = StringUtils.replace(sourceSql, raw, dist);
