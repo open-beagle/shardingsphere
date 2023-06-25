@@ -160,6 +160,7 @@ public class SqlRewriteEngine implements SqlReplace {
     private static String reWriteSql(String rawSql, String distSql, String paramRel, String sourceSql) {
         String rawTrim = StringUtil.trimAllWhitespace(rawSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的模板: -> {}", rawTrim);
+        String distTrim = StringUtil.trimAllWhitespace(distSql).toUpperCase(Locale.ROOT);
         String tempTrim = StringUtil.trimAllWhitespace(sourceSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的SQL: -> {}", tempTrim);
 
@@ -184,8 +185,8 @@ public class SqlRewriteEngine implements SqlReplace {
         if (matches) {
             if (isHaveParam) {
                 String replaceRegex = "\\?";
-                String[] split = rawSql.replaceAll("\\s+", " ").split(replaceRegex);
-                String paramStr = sourceSql.replaceAll("\\s+", " ");
+                String[] split = rawTrim.replaceAll("\\s+", " ").split(replaceRegex);
+                String paramStr = tempTrim.replaceAll("\\s+", " ");
                 for (String str : split) {
                     int begin = paramStr.indexOf(str);
                     String start = paramStr.substring(0, begin);
@@ -254,5 +255,47 @@ public class SqlRewriteEngine implements SqlReplace {
         regex = regex.replace("}", "\\}");
         regex = regex.replace("?", ".*");
         return regex;
+    }
+
+    public static void main(String[] args) {
+//        String orginSql  = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, ?, ?, ?, ?, ?, ?, ?, ?)";
+//        String targetSql = "insert into imo_tae_yqfx_detailed (    idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (    ?, ?, ?, ?, ?, ?, ?, ?)";
+//        String sql = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, '1UsZ0Mz8uFharbz0GRJajgIViSKL2xfZA7A+3y5C+6Y=', '2023-06-26 00:00:00.0', '北京', 0, 0, '太原', '2023-06-25 16:53:51.442', '枫渔小区管理员')";
+//        String s = reWriteSql(orginSql, targetSql, null, sql);
+//        System.out.println(s);
+
+
+        String orginSql = "insert into" +
+                "  imo_tae_yqfx_detailed (" +
+                "    id," +
+                "    idcard," +
+                "    fxrq," +
+                "    fxqdd," +
+                "    is_fxhjy," +
+                "    is_ygzgw," +
+                "    xjydd," +
+                "    create_time," +
+                "    create_user" +
+                "  )" +
+                "values" +
+                "  (id, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String targetSql = "insert into" +
+                "  imo_tae_yqfx_detailed (" +
+                "    idcard," +
+                "    fxrq," +
+                "    fxqdd," +
+                "    is_fxhjy," +
+                "    is_ygzgw," +
+                "    xjydd," +
+                "    create_time," +
+                "    create_user" +
+                "  )" +
+                "values" +
+                "  (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sql = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, '1UsZ0Mz8uFharbz0GRJajgIViSKL2xfZA7A+3y5C+6Y=', '2023-06-26 00:00:00.0', '北京', 0, 0, '太原', '2023-06-25 16:53:51.442', '枫渔小区管理员')";
+        String s = reWriteSql(orginSql, targetSql, null, sql);
+        System.out.println(s);
     }
 }
