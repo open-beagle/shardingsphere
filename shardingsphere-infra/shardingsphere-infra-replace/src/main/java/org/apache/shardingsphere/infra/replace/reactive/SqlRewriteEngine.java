@@ -33,7 +33,10 @@ import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
 import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -160,7 +163,6 @@ public class SqlRewriteEngine implements SqlReplace {
     private static String reWriteSql(String rawSql, String distSql, String paramRel, String sourceSql) {
         String rawTrim = StringUtil.trimAllWhitespace(rawSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的模板: -> {}", rawTrim);
-        String distTrim = StringUtil.trimAllWhitespace(distSql).toUpperCase(Locale.ROOT);
         String tempTrim = StringUtil.trimAllWhitespace(sourceSql).toUpperCase(Locale.ROOT);
         log.info("清空空格后的SQL: -> {}", tempTrim);
 
@@ -185,8 +187,8 @@ public class SqlRewriteEngine implements SqlReplace {
         if (matches) {
             if (isHaveParam) {
                 String replaceRegex = "\\?";
-                String[] split = rawTrim.replaceAll("\\s+", " ").split(replaceRegex);
-                String paramStr = tempTrim.replaceAll("\\s+", " ");
+                String[] split = rawSql.replaceAll("\\s+", " ").split(replaceRegex);
+                String paramStr = sourceSql.replaceAll("\\s+", " ");
                 for (String str : split) {
                     int begin = paramStr.indexOf(str);
                     String start = paramStr.substring(0, begin);
