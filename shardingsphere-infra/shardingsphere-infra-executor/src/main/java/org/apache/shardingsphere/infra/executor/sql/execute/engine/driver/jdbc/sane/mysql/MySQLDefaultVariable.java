@@ -43,7 +43,7 @@ public final class MySQLDefaultVariable {
         VARIABLES.put("interactive_timeout", "28800");
         VARIABLES.put("license", "GPL");
         VARIABLES.put("lower_case_table_names", "2");
-        VARIABLES.put("max_allowed_packet", "4194304");
+        VARIABLES.put("max_allowed_packet", "41943040");
         VARIABLES.put("net_buffer_length", "16384");
         VARIABLES.put("net_write_timeout", "60");
         VARIABLES.put("sql_mode", "STRICT_TRANS_TABLES");
