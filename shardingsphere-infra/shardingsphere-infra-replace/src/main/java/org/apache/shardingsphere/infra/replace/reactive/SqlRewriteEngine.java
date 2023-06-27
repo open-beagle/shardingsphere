@@ -33,7 +33,10 @@ import org.apache.shardingsphere.infra.replace.util.etcd.EtcdKey;
 import org.apache.shardingsphere.infra.replace.util.etcd.JetcdClientUtil;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -254,5 +257,47 @@ public class SqlRewriteEngine implements SqlReplace {
         regex = regex.replace("}", "\\}");
         regex = regex.replace("?", ".*");
         return regex;
+    }
+
+    public static void main(String[] args) {
+//        String orginSql  = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, ?, ?, ?, ?, ?, ?, ?, ?)";
+//        String targetSql = "insert into imo_tae_yqfx_detailed (    idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (    ?, ?, ?, ?, ?, ?, ?, ?)";
+//        String sql = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, '1UsZ0Mz8uFharbz0GRJajgIViSKL2xfZA7A+3y5C+6Y=', '2023-06-26 00:00:00.0', '北京', 0, 0, '太原', '2023-06-25 16:53:51.442', '枫渔小区管理员')";
+//        String s = reWriteSql(orginSql, targetSql, null, sql);
+//        System.out.println(s);
+
+
+        String orginSql = "insert into" +
+                "  imo_tae_yqfx_detailed (" +
+                "    id," +
+                "    idcard," +
+                "    fxrq," +
+                "    fxqdd," +
+                "    is_fxhjy," +
+                "    is_ygzgw," +
+                "    xjydd," +
+                "    create_time," +
+                "    create_user" +
+                "  )" +
+                "values" +
+                "  (id, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String targetSql = "insert into" +
+                "  imo_tae_yqfx_detailed (" +
+                "    idcard," +
+                "    fxrq," +
+                "    fxqdd," +
+                "    is_fxhjy," +
+                "    is_ygzgw," +
+                "    xjydd," +
+                "    create_time," +
+                "    create_user" +
+                "  )" +
+                "values" +
+                "  (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        String sql = "insert into imo_tae_yqfx_detailed (id, idcard, fxrq, fxqdd, is_fxhjy, is_ygzgw, xjydd, create_time, create_user) values (id, '1UsZ0Mz8uFharbz0GRJajgIViSKL2xfZA7A+3y5C+6Y=', '2023-06-26 00:00:00.0', '北京', 0, 0, '太原', '2023-06-25 16:53:51.442', '枫渔小区管理员')";
+        String s = reWriteSql(orginSql, targetSql, null, sql);
+        System.out.println(s);
     }
 }
