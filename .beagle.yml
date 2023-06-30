@@ -52,6 +52,7 @@ steps:
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/oscarJDBC8.jar > .tmp/oscarJDBC8.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/gbasedbtjdbc_3.3.0_3.jar > .tmp/gbasedbtjdbc_3.3.0_3.jar
       - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/kingbase8-8.6.0-0024.jar > .tmp/kingbase8-8.6.0-0024.jar
+      - curl https://cache.wodcloud.com/vscode/beagle/shardingsphere-proxy/DmJdbcDriver18.jar > .tmp/DmJdbcDriver18.jar
 
   - name: java
     image: registry.cn-qingdao.aliyuncs.com/wod/devops-maven:3.8-openjdk-17
@@ -59,6 +60,7 @@ steps:
       - mvn install:install-file -Dfile=.tmp/oscarJDBC8.jar -DgroupId=com.esen.jdbc -DartifactId=oscarJDBC -Dversion=8 -Dpackaging=jar
       - mvn install:install-file -Dfile=.tmp/gbasedbtjdbc_3.3.0_3.jar -DgroupId=com.gbase -DartifactId=ifxjdbc -Dversion=8s -Dpackaging=jar
       - mvn install:install-file -Dfile=.tmp/kingbase8-8.6.0-0024.jar -DgroupId=com.kingbase8 -DartifactId=kingbase8 -Dversion=V008R006C007B0024 -Dpackaging=jar
+      - mvn install:install-file -Dfile=.tmp/DmJdbcDriver18.jar -DgroupId=com.dameng -DartifactId=DmJdbcDriver18 -Dversion=8.1.2.192 -Dpackaging=jar
       - cd $DRONE_WORKSPACE/shardingsphere-infra
       - mvn clean install -Prelease -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true
       - cd $DRONE_WORKSPACE/shardingsphere-proxy/shardingsphere-proxy-frontend/shardingsphere-proxy-frontend-core
