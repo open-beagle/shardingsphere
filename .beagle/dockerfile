@@ -17,6 +17,6 @@ COPY .tmp/mysql-connector-java-$MYSQL_CONNECTOR_VERSION.jar ${LOCAL_PATH}/ext-li
 COPY .tmp/oscarJDBC8.jar ${LOCAL_PATH}/ext-lib/oscarJDBC8.jar
 COPY .tmp/gbasedbtjdbc_3.3.0_3.jar ${LOCAL_PATH}/ext-lib/gbasedbtjdbc_3.3.0_3.jar
 COPY .tmp/kingbase8-8.6.0-0024.jar ${LOCAL_PATH}/ext-lib/kingbase8-8.6.0-0024.jar
-COPY .tmp/DmJdbcDriver18.jar ${LOCAL_PATH}/ext-lib/DmJdbcDriver18.jar.jar
+# COPY .tmp/DmJdbcDriver18.jar ${LOCAL_PATH}/ext-lib/DmJdbcDriver18.jar.jar
 
 ENTRYPOINT ${LOCAL_PATH}/bin/start.sh ${PORT} && tail -f ${LOCAL_PATH}/logs/stdout.log
