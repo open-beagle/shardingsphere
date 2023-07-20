@@ -3,7 +3,7 @@ name: docker
 
 trigger:
   branch:
-    - dev-gy-dm
+    - dev-gy-databasePerfix
 
 volumes:
   - name: docker
@@ -92,7 +92,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-amd64
       dockerfile: .beagle/dockerfile
       repo: wod/beagle-xc-dbproxy
-      version: '5.1.2-gy-dm'
+      version: '5.1.2-gy-databasePerfix'
       channel: 'amd64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com
@@ -110,7 +110,7 @@ steps:
       base: registry.cn-qingdao.aliyuncs.com/wod/openjdk:17-jdk-slim-arm64
       dockerfile: .beagle/dockerfile
       repo: wod/beagle-xc-dbproxy
-      version: '5.1.2-gy-dm'
+      version: '5.1.2-gy-databasePerfix'
       channel: 'arm64'
       args: 'MYSQL_CONNECTOR_VERSION=5.1.49'
       registry: registry.cn-qingdao.aliyuncs.com

@@ -93,7 +93,9 @@ public final class RouteSQLRewriteEngine {
     private void addSQLRewriteUnits(final Map<RouteUnit, SQLRewriteUnit> sqlRewriteUnits, final SQLRewriteContext sqlRewriteContext,
                                     final RouteContext routeContext, final Collection<RouteUnit> routeUnits) {
         for (RouteUnit each : routeUnits) {
-            sqlRewriteUnits.put(each, new SQLRewriteUnit(new RouteSQLBuilder(sqlRewriteContext, each).toSQL(), getParameters(sqlRewriteContext.getParameterBuilder(), routeContext, each)));
+            // updated by pengsong 跨库连表查询时 RouteSQLBuilder 去掉了库前缀会导致找不到表。这里去掉先看看
+//            sqlRewriteUnits.put(each, new SQLRewriteUnit(new RouteSQLBuilder(sqlRewriteContext, each).toSQL(), getParameters(sqlRewriteContext.getParameterBuilder(), routeContext, each)));
+            sqlRewriteUnits.put(each, new SQLRewriteUnit(sqlRewriteContext.getSql(), getParameters(sqlRewriteContext.getParameterBuilder(), routeContext, each)));
         }
     }
     
