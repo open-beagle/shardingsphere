@@ -108,6 +108,7 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
         dataTypes.put("NUMBER", Types.NUMERIC);
         dataTypes.put("VARCHAR2", Types.VARCHAR);
         dataTypes.put("NVARCHAR", Types.VARCHAR);
+        dataTypes.put("NVARCHAR2", Types.VARCHAR);
         dataTypes.put("NCHAR", Types.VARCHAR);
         dataTypes.put("DATETIME", Types.TIME);
     }
