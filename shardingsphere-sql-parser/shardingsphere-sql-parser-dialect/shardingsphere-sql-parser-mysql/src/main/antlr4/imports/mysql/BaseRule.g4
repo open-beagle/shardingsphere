@@ -865,7 +865,7 @@ bitExpr
     ;
     
 simpleExpr
-    : functionCall
+    : (functionCall | identifier DOT_ functionCall)
     | parameterMarker
     | literals
     | columnRef
@@ -1129,7 +1129,7 @@ dataType
     | dataTypeName = BIT fieldLength?
     | dataTypeName = (BOOL | BOOLEAN)
     | dataTypeName = CHAR fieldLength? charsetWithOptBinary?
-    | (dataTypeName = NCHAR | dataTypeName = NATIONAL CHAR) fieldLength? BINARY?
+    | (dataTypeName = NCHAR | dataTypeName = NATIONAL CHAR | dataTypeName = VARCHAR | dataTypeName = VARCHAR_NUMBER) fieldLength? BINARY?
     | dataTypeName = SIGNED (INTEGER | INT)?
     | dataTypeName = BINARY fieldLength?
     | (dataTypeName = CHAR VARYING | dataTypeName = VARCHAR) fieldLength charsetWithOptBinary?

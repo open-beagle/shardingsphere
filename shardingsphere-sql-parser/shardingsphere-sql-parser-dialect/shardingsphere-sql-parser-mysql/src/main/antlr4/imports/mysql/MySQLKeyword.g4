@@ -2727,6 +2727,10 @@ VARCHAR
     : V A R C H A R
     ;
 
+VARCHAR_NUMBER
+    : V A R C H A R [1-9]
+    ;
+
 VARCHARACTER
     : V A R C H A R A C T E R
     ;
