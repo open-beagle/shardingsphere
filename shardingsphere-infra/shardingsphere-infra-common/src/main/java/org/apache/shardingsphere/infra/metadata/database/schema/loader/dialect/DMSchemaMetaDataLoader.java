@@ -120,7 +120,7 @@ public final class DMSchemaMetaDataLoader implements DialectSchemaMetaDataLoader
                                               final DatabaseMetaData databaseMetaData) throws SQLException {
         String columnName = resultSet.getString("COLUMN_NAME");
         String dataType = getOriginalDataType(resultSet.getString("DATA_TYPE"));
-        Integer defaultDataType = -1111;
+        Integer defaultDataType = Types.VARCHAR;
         if (dataTypeMap.get(dataType) == null) {
             // add by wuwanli debug
             log.error("dataType not exist! dataType:{},using default datatype:{}" , dataType, defaultDataType);
