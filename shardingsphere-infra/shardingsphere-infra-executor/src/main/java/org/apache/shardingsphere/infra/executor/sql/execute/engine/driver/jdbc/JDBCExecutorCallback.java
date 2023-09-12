@@ -19,6 +19,7 @@ package org.apache.shardingsphere.infra.executor.sql.execute.engine.driver.jdbc;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.database.metadata.DataSourceMetaData;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.kernel.model.ExecutorCallback;
@@ -38,10 +39,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -95,6 +93,9 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName());
             // 16进制数据重写
            String databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("ApplicationName");
+           if (StringUtils.isEmpty(databaseType)) {
+               databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("dbname");
+           }
             distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, databaseType);
 
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
