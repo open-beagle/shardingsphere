@@ -22,7 +22,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.db.protocol.mysql.packet.MySQLPacket;
 import org.apache.shardingsphere.db.protocol.mysql.payload.MySQLPacketPayload;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -70,8 +74,36 @@ public final class MySQLTextResultSetRowPacket implements MySQLPacket {
                     payload.writeBytesLenenc((Boolean) each ? new byte[]{1} : new byte[]{0});
                 } else if (each instanceof LocalDateTime) {
                     payload.writeStringLenenc(DT_FMT.format((LocalDateTime) each));
+                } else if(each instanceof Blob) {
+                    payload.writeBytesLenenc(blobToBytes((Blob) each));
                 } else {
                     payload.writeStringLenenc(each.toString());
+                }
+            }
+        }
+    }
+
+    public static byte[] blobToBytes(Blob blob){
+        BufferedInputStream bis = null;
+        try {
+            bis = new BufferedInputStream(blob.getBinaryStream());
+            byte[] bytes = new byte[(int) blob.length()];
+            int len = bytes.length;
+            int offset = 0;
+            int read = 0;
+            while(offset < len && (read = bis.read(bytes, offset, len - offset)) > 0){
+                offset += read;
+            }
+            return bytes;
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if(bis != null){
+                try {
+                    bis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
