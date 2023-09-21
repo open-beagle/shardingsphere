@@ -22,6 +22,7 @@ import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,12 +50,12 @@ public class SqlReplaceEngine {
      * @param sql
      * @return
      */
-    public static String replaceSql(@Nonnull SQLReplaceTypeEnum type, @Nonnull final String sql, @Nullable Object obj) {
+    public static String replaceSql(@Nonnull SQLReplaceTypeEnum type, @Nonnull final String sql, @Nullable Object obj, List<String> blobColumnList) {
         String rawSql = sql;
         SqlReplace engine = ENGINE.get(type.getCode());
         if (Objects.nonNull(engine)) {
             try {
-                String distSql = engine.replace(rawSql, obj);
+                String distSql = engine.replace(rawSql, obj, blobColumnList);
                 if (!Objects.equals(sql, distSql)) {
                     log.info("---------> 使用 {} 替换前 -> {}", type.getName(), rawSql);
                     log.info("---------> 替换后 -> {}", distSql);
