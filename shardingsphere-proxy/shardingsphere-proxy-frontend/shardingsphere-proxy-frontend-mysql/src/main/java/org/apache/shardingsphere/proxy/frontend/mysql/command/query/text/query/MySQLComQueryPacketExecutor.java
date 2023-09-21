@@ -80,7 +80,7 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
 
         // 前向SQL 替换  2023年2月6日 update by pengsong
         String rawSql = packet.getSql();
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END, null);
         DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
         SQLStatement sqlStatement = parseSql(distSql, databaseType);
         textProtocolBackendHandler = areMultiStatements(connectionSession, sqlStatement, distSql) ? new MySQLMultiStatementsHandler(connectionSession, sqlStatement, distSql)

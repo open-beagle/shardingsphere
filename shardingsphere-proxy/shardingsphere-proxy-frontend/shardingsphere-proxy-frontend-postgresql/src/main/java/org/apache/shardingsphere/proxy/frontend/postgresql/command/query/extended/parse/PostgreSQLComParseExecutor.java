@@ -73,7 +73,7 @@ public final class PostgreSQLComParseExecutor implements CommandExecutor {
 
         ShardingSphereSQLParserEngine sqlParserEngine = null;
         String rawSql = packet.getSql();
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END, null);
         SQLStatement sqlStatement = distSql.trim().isEmpty() ? new EmptyStatement() : (sqlParserEngine = createShardingSphereSQLParserEngine(connectionSession.getDatabaseName())).parse(distSql, true);
         if (sqlStatement.getParameterCount() > 0) {
             distSql = convertSQLToJDBCStyle(sqlStatement, distSql);

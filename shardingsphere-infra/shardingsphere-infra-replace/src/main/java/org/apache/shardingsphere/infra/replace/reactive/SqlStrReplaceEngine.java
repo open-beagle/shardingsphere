@@ -58,7 +58,7 @@ public class SqlStrReplaceEngine implements SqlReplace {
     private static final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Override
-    public String replace(String sql, Object obj) {
+    public String replace(String sql, Object obj, List<String> blobColumnList) {
         return replaceSql(sql, (SQLStrReplaceTriggerModeEnum) obj);
     }
 

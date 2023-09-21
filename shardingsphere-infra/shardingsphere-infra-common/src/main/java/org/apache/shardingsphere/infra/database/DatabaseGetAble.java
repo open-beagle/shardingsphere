@@ -15,34 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.shardingsphere.infra.replace;
+package org.apache.shardingsphere.infra.database;
 
-import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
-
-import java.util.List;
+import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
 
 /**
  * SQL替换
  * @author SmileCircle
  */
-public interface SqlReplace {
-    
-    /**
-     * SQL 替换
-     * @param sql 原SQL
-     * @param obj 其他对象
-     * @return  结果SQL
-     */
-    String replace(String sql, Object obj, List<String> blobColumnList);
-    
-    /**
-     * 类型
-     * @return 类型
-     */
-    SQLReplaceTypeEnum getType();
+public interface DatabaseGetAble {
 
-    /**
-     * 初始化
-     */
-    void init();
+    ShardingSphereDatabase getDatabase(final String name);
 }

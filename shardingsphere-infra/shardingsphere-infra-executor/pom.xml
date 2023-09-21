@@ -37,7 +37,7 @@
             <artifactId>shardingsphere-infra-rewrite</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>

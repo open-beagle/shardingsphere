@@ -65,7 +65,7 @@ public class SqlRewriteEngine implements SqlReplace {
     private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
-    public String replace(String sql, Object obj) {
+    public String replace(String sql, Object obj, List<String> blobColumnList) {
         if (Objects.nonNull(obj)) {
             return reWriteSql(sql, String.valueOf(obj));
         }

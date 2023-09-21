@@ -74,7 +74,7 @@ public final class PostgreSQLComQueryExecutor implements QueryCommandExecutor {
 //                comQueryPacket.getSql(), Optional::empty, connectionSession);
 
         String rawSql = comQueryPacket.getSql();
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END);
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END, null);
                 this.connectionContext = connectionContext;
         textProtocolBackendHandler = TextProtocolBackendHandlerFactory.newInstance(DatabaseTypeFactory.getInstance("PostgreSQL"),
                 distSql, Optional::empty, connectionSession);
