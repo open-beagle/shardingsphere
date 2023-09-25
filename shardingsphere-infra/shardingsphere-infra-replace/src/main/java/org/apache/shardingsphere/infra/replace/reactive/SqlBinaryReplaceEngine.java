@@ -121,10 +121,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
         String distSql = sql;
         // 替换x''
         for (String hex : hexList) {
-            int index = distSql.indexOf(hex);
-            String frontSql = distSql.substring(0, index - 2);
+            String hexRegex = "x'" + hex + "'";
+            int index = distSql.indexOf(hexRegex);
+            String frontSql = distSql.substring(0, index);
             // 去除hex后面的'符合
-            String backSql = distSql.substring(index + hex.length() + 1);
+            String backSql = distSql.substring(index + hexRegex.length());
             String binaryString = "0x" + hex;
             distSql = frontSql + binaryString + backSql;
         }
