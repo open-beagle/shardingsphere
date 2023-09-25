@@ -171,7 +171,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                     if(valueList != null && valueList.size() > 0){
                         valueList.forEach(valueData -> {
                             if (isHexString(valueData)) {
-                                String chineseStr = "'" + hexStr2Str(valueData) + "'";
+                                String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'","''") + "'";
                                 int index = distSql.indexOf(valueData);
                                 String frontSql = distSql.substring(0, index - 2);
                                 String backSql = distSql.substring(index + valueData.length());
@@ -193,7 +193,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                 if (!blobColumnList.contains(columnName) && value instanceof SQLHexExpr) {
                     String valueData = ((SQLHexExpr) value).getHex();
                     if (isHexString(valueData)) {
-                        String chineseStr = "'" + hexStr2Str(valueData) + "'";
+                        String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'","''") + "'";
                         int index = distSql.indexOf(valueData);
                         String frontSql = distSql.substring(0, index - 2);
                         // 去除hex后面的'符合
