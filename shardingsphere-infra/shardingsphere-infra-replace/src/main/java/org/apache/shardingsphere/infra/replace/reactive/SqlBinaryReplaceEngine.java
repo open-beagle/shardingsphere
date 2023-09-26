@@ -18,13 +18,14 @@
 package org.apache.shardingsphere.infra.replace.reactive;
 
 import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.ast.SQLCommentHint;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLHexExpr;
-import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
-import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
-import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
+import com.alibaba.druid.sql.ast.statement.*;
 import com.alibaba.druid.sql.parser.SQLParserUtils;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
+import com.alibaba.druid.sql.visitor.SchemaStatVisitor;
+import com.alibaba.druid.stat.TableStat;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.replace.SqlReplace;
@@ -49,7 +50,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     /**
      * 匹配 插入/修改SQL 中含有 x开头的 二进制
      */
-    private static final String REGEX_X = "^(insert|update).*x'.*'.*";
+    private static final String REGEX_X = "^(insert|update|select).*x'.*'.*";
     /**
      * 寻找 x''中间的内容
      */
@@ -206,6 +207,36 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                     }
                 }
             });
+        } else if (statement instanceof SQLSelectStatement) {
+            SchemaStatVisitor visitor = new SchemaStatVisitor(DbType.valueOf(DbType.mysql.name()));
+            statement.accept(visitor);
+            List<TableStat.Condition> conditions = visitor.getConditions();
+            if(conditions != null && conditions.size() > 0) {
+                conditions.forEach(item -> {
+                    String columnName = item.getColumn().getName();
+                    List<Object> values = item.getValues();
+                    if (!blobColumnList.contains(columnName)) {
+                        if(values != null && values.size() > 0){
+                            values.forEach(value -> {
+                                if(value instanceof byte[]){
+                                    byte[] valueByte = (byte[]) value;
+                                    String valueData = new String(valueByte);
+                                    String chineseStr = "'" + valueData.replaceAll("'","''") + "'";
+                                    String hexStr = bytesToHex(valueByte);
+                                    int index = distSql.indexOf(hexStr);
+                                    String frontSql = distSql.substring(0, index - 2);
+                                    // 去除hex后面的'符合
+                                    String backSql = distSql.substring(index + hexStr.length());
+                                    if(backSql.startsWith("'")){
+                                        backSql = backSql.substring(1);
+                                    }
+                                    executeSql.set(frontSql + chineseStr + backSql);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
         }
         return executeSql.get();
     }
@@ -222,6 +253,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
             bytes[i] = (byte) (n & 0xff);
         }
         return new String(bytes);
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        String hex = new BigInteger(1, bytes).toString(16);
+        return hex.toUpperCase();
     }
 
     public static boolean isHexString(String input) {
