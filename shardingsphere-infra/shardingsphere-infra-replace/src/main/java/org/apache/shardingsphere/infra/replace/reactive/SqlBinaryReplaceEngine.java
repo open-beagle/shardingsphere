@@ -174,9 +174,10 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                         valueList.forEach(valueData -> {
                             if (isHexString(valueData)) {
                                 String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'","''") + "'";
-                                int index = distSql.indexOf(valueData);
-                                String frontSql = distSql.substring(0, index - 2);
-                                String backSql = distSql.substring(index + valueData.length());
+                                String newSql = executeSql.get();
+                                int index = newSql.indexOf(valueData);
+                                String frontSql = newSql.substring(0, index - 2);
+                                String backSql = newSql.substring(index + valueData.length());
                                 if(backSql.startsWith("'")){
                                     backSql = backSql.substring(1);
                                 }
@@ -196,10 +197,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                     String valueData = ((SQLHexExpr) value).getHex();
                     if (isHexString(valueData)) {
                         String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'","''") + "'";
-                        int index = distSql.indexOf(valueData);
-                        String frontSql = distSql.substring(0, index - 2);
+                        String newSql = executeSql.get();
+                        int index = newSql.indexOf(valueData);
+                        String frontSql = newSql.substring(0, index - 2);
                         // 去除hex后面的'符合
-                        String backSql = distSql.substring(index + valueData.length());
+                        String backSql = newSql.substring(index + valueData.length());
                         if(backSql.startsWith("'")){
                             backSql = backSql.substring(1);
                         }
@@ -223,10 +225,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
                                     String valueData = new String(valueByte);
                                     String chineseStr = "'" + valueData.replaceAll("'","''") + "'";
                                     String hexStr = bytesToHex(valueByte);
-                                    int index = distSql.indexOf(hexStr);
-                                    String frontSql = distSql.substring(0, index - 2);
+                                    String newSql = executeSql.get();
+                                    int index = newSql.indexOf(hexStr);
+                                    String frontSql = newSql.substring(0, index - 2);
                                     // 去除hex后面的'符合
-                                    String backSql = distSql.substring(index + hexStr.length());
+                                    String backSql = newSql.substring(index + hexStr.length());
                                     if(backSql.startsWith("'")){
                                         backSql = backSql.substring(1);
                                     }
