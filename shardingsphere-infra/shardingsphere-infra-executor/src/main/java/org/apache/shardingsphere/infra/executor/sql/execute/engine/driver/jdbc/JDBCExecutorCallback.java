@@ -31,6 +31,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.infra.database.DatabaseHolder;
+import org.apache.shardingsphere.infra.database.ThreadLocalManager;
 import org.apache.shardingsphere.infra.database.metadata.DataSourceMetaData;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.executor.kernel.model.ExecutorCallback;
@@ -171,11 +172,11 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
 
     private boolean isDmBlob(JDBCExecutionUnit jdbcExecutionUnit, String tableName, String fieldName) {
         try {
-            String dataSourceName = jdbcExecutionUnit.getExecutionUnit().getDataSourceName();
+            String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
             Connection connection = jdbcExecutionUnit.getStorageResource().getConnection();
             String dbname = connection.getClientInfo("dbname");
             if (Objects.equals(dbname, "DAMENG")) {
-                ShardingSphereDatabase database = DatabaseHolder.getDatabase(dataSourceName);
+                ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
                 if (Objects.nonNull(database)) {
                     for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
                         for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {

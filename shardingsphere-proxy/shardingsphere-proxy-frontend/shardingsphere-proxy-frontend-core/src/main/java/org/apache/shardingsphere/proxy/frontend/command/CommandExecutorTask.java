@@ -27,6 +27,7 @@ import org.apache.shardingsphere.db.protocol.packet.CommandPacketType;
 import org.apache.shardingsphere.db.protocol.packet.DatabasePacket;
 import org.apache.shardingsphere.db.protocol.payload.PacketPayload;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
+import org.apache.shardingsphere.infra.database.ThreadLocalManager;
 import org.apache.shardingsphere.proxy.backend.communication.SQLStatementDatabaseHolder;
 import org.apache.shardingsphere.proxy.backend.context.ProxyContext;
 import org.apache.shardingsphere.proxy.backend.exception.BackendConnectionException;
@@ -74,6 +75,7 @@ public final class CommandExecutorTask implements Runnable {
                 fillLogMDC();
             }
             connectionSession.getBackendConnection().prepareForTaskExecution();
+            ThreadLocalManager.setBackendConnectionDatabase(connectionSession.getDatabaseName());
             isNeedFlush = executeCommand(context, payload);
             // CHECKSTYLE:OFF
         } catch (final Exception ex) {
