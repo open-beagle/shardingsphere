@@ -21,7 +21,9 @@ import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLName;
 import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
 import com.alibaba.druid.sql.parser.SQLParserUtils;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
@@ -143,23 +145,21 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
                 List<SQLExpr> columns = insertStatement.getColumns();
                 SQLName tableName = insertStatement.getTableName();
                 columns.forEach(item -> {
-                    if(item instanceof SQLCharExpr){
-                        String columnName = ((SQLCharExpr) item).getText();
+                    if(item instanceof SQLIdentifierExpr){
+                        String columnName = ((SQLIdentifierExpr) item).getName();
                         if (isDmBlob(jdbcExecutionUnit, tableName.getSimpleName(), columnName)) {
-                            blobColumnList.add(item);
+                            blobColumnList.add(columnName);
                         }
                     }
                 });
             } else if (statement instanceof SQLUpdateStatement) {
                 SQLUpdateStatement updateStatement = (SQLUpdateStatement) statement;
-                List columns = updateStatement.getItems();
+                List<SQLUpdateSetItem> columns = updateStatement.getItems();
                 SQLName tableName = updateStatement.getTableName();
                 columns.forEach(item -> {
-                    if(item instanceof SQLCharExpr){
-                        String columnName = ((SQLCharExpr) item).getText();
-                        if (isDmBlob(jdbcExecutionUnit, tableName.getSimpleName(), columnName)) {
-                            blobColumnList.add(item);
-                        }
+                    String columnName = item.getColumn().toString();
+                    if (isDmBlob(jdbcExecutionUnit, tableName.getSimpleName(), columnName)) {
+                        blobColumnList.add(columnName);
                     }
                 });
             }
@@ -182,7 +182,7 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
                             if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
                                 for (ShardingSphereColumn column : table.getColumns().values()) {
                                     if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
-                                        return Objects.equals(column.getDataType(), 12);
+                                        return Objects.equals(column.getDataType(), 2004);
                                     }
                                 }
                             }
