@@ -17,14 +17,26 @@
 
 package org.apache.shardingsphere.proxy.backend.communication.jdbc;
 
+import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.SQLName;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
+import com.alibaba.druid.sql.parser.SQLParserUtils;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
 import org.apache.shardingsphere.infra.binder.LogicSQL;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.binder.statement.dml.SelectStatementContext;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
+import org.apache.shardingsphere.infra.database.DatabaseHolder;
+import org.apache.shardingsphere.infra.database.ThreadLocalManager;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
+import org.apache.shardingsphere.infra.database.type.dialect.KingbaseDatabaseType;
 import org.apache.shardingsphere.infra.executor.sql.context.ExecutionContext;
 import org.apache.shardingsphere.infra.executor.sql.execute.engine.SQLExecutorExceptionHandler;
 import org.apache.shardingsphere.infra.executor.sql.execute.engine.driver.jdbc.JDBCExecutionUnit;
@@ -38,6 +50,9 @@ import org.apache.shardingsphere.infra.federation.executor.FederationContext;
 import org.apache.shardingsphere.infra.federation.executor.FederationExecutor;
 import org.apache.shardingsphere.infra.federation.executor.FederationExecutorFactory;
 import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereColumn;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereSchema;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereTable;
 import org.apache.shardingsphere.infra.metadata.database.schema.util.SystemSchemaUtil;
 import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
@@ -59,15 +74,12 @@ import org.apache.shardingsphere.proxy.backend.response.header.update.UpdateResp
 import org.apache.shardingsphere.sharding.merge.common.IteratorStreamMergedResult;
 import org.apache.shardingsphere.sql.parser.sql.dialect.statement.mysql.dml.MySQLInsertStatement;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -151,16 +163,20 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
 
         // SQL 重写 2023年1月5日 update by pengsong
         LogicSQL logicSQL = getLogicSQL();
-//        String rawSql = logicSQL.getSql();
+        String rawSql = logicSQL.getSql();
 //        // 先进行字符替换
-//        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
+        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
 //        // 再进行SQL重写
-//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
+        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
 //        // 16进制数据重写
-//        String type = getDatabase().getResource().getDatabaseType().getType();
-//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, null);
-//        logicSQL.setSql(distSql);
-        logicSQL.setSql(logicSQL.getSql());
+        String type = getDatabase().getResource().getDatabaseType().getType();
+        List blobColumnList = null;
+        if(Objects.equals(type, "kingbase8") || Objects.equals(type, "PostgreSQL")) {
+            blobColumnList = this.getBlobColumnList(distSql);
+        }
+        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, blobColumnList);
+        logicSQL.setSql(distSql);
+//        logicSQL.setSql(logicSQL.getSql());
 
 
         ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
@@ -185,6 +201,63 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
         return executeResultSample instanceof QueryResult
                 ? processExecuteQuery(executionContext, result, (QueryResult) executeResultSample)
                 : processExecuteUpdate(executionContext, result);
+    }
+
+    private List getBlobColumnList(String sql) {
+        List blobColumnList = new ArrayList<>();
+        try {
+            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
+            com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
+            if (statement instanceof SQLInsertStatement) {
+                SQLInsertStatement insertStatement = (com.alibaba.druid.sql.ast.statement.SQLInsertStatement) statement;
+                List<SQLExpr> columns = insertStatement.getColumns();
+                SQLName tableName = insertStatement.getTableName();
+                columns.forEach(item -> {
+                    if(item instanceof SQLIdentifierExpr){
+                        String columnName = ((SQLIdentifierExpr) item).getName();
+                        if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
+                            blobColumnList.add(item);
+                        }
+                    }
+                });
+            } else if (statement instanceof SQLUpdateStatement) {
+                SQLUpdateStatement updateStatement = (SQLUpdateStatement) statement;
+                List<SQLUpdateSetItem> columns = updateStatement.getItems();
+                SQLName tableName = updateStatement.getTableName();
+                columns.forEach(item -> {
+                    String columnName = item.getColumn().toString();
+                    if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
+                        blobColumnList.add(columnName);
+                    }
+                });
+            }
+        } catch (Exception ex) {
+            return blobColumnList;
+        }
+        return blobColumnList;
+    }
+
+    private boolean isKingbaseBlob(String tableName, String fieldName) {
+        try {
+            String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
+            ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
+            if (Objects.nonNull(database)) {
+                for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
+                    for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {
+                        if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
+                            for (ShardingSphereColumn column : table.getColumns().values()) {
+                                if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
+                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return false;
     }
     
     private ResultSet doExecuteFederation(final LogicSQL logicSQL, final MetaDataContexts metaDataContexts) throws SQLException {
