@@ -96,6 +96,12 @@ public class SqlReplaceEngine {
         return isHex;
     }
 
+//    public static void main(String[] args) {
+//        String sql = "UPDATE XLJZ_XLJZ_XLZXJLBDJ SET DB_MC = '一大队', GX_RQ = '2024-10-18 21:49:55.991', GXR_ID = '3000', GXR_XM = '局管理员', XM = '罗永梅', BH = '5201032023000018', XLZXS = '罗永亮', ZXRQ = '2024-10-17', QTZK = '正常', QXZK = '正常', ZZL = '正常', YZL = '正常', RJGX = '正常', ZKGSFTY = '01', GRTC = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', SHZCXT = '正常', XLCY = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', XSZK = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', CBZD = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', ZXFS = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', JDRYZS = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', ZXJSJDC = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', ZXXG = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', XLWTLX = '01', AQFXQX = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', XLWTJY = '正常正常 正常 正常', ZXZRYJ = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', BZ = x'E6ADA3E5B8B8E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8' WHERE ID = 'c0228ce2ceac446baab06585f9457222'";
+//        System.out.println(hexToChar(sql, new ArrayList<>()));
+//    }
+
+
     private static String transferHexToChinesePg(String distSql, List<String> blobColumnList) {
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(distSql, DbType.mysql);
         com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
@@ -158,10 +164,11 @@ public class SqlReplaceEngine {
                     String valueData = ((SQLHexExpr) value).getHex();
                     if (isHexString(valueData)) {
                         String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'", "''") + "'";
-                        int index = distSql.indexOf(valueData);
-                        String frontSql = distSql.substring(0, index - 2);
+                        String newSql = executeSql.get();
+                        int index = newSql.indexOf(valueData);
+                        String frontSql = newSql.substring(0, index - 2);
                         // 去除hex后面的'符合
-                        String backSql = distSql.substring(index + valueData.length());
+                        String backSql = newSql.substring(index + valueData.length());
                         if (backSql.startsWith("'")) {
                             backSql = backSql.substring(1);
                         }
