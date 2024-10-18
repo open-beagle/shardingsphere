@@ -84,10 +84,7 @@ public class SqlReplaceEngine {
     }
 
     public static String hexToChar(String sql, List<String> getBlobColumnList) {
-        log.info("---------> hexToChar 前 -> {}", sql);
-        String distSql = transferHexToChinesePg(sql, getBlobColumnList);
-        log.info("---------> hexToChar 后 -> {}", distSql);
-        return distSql;
+        return transferHexToChinesePg(sql, getBlobColumnList);
     }
 
     public static boolean isHexString(String input) {
