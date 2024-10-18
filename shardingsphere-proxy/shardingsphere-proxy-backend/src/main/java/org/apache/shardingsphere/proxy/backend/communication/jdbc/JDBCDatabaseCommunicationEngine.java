@@ -161,19 +161,19 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
         
         // SQL 重写 2023年1月5日 update by pengsong
         LogicSQL logicSQL = getLogicSQL();
-        String rawSql = logicSQL.getSql();
+//        String rawSql = logicSQL.getSql();
         // // 先进行字符替换
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
+//        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
         // // 再进行SQL重写
-        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
+//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
         // // 16进制数据重写
-        String type = getDatabase().getResource().getDatabaseType().getType();
-        List blobColumnList = null;
-        if (Objects.equals(type, "kingbase8") || Objects.equals(type, "PostgreSQL")) {
-            blobColumnList = this.getBlobColumnList(distSql);
-        }
-        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, blobColumnList);
-        logicSQL.setSql(distSql);
+//        String type = getDatabase().getResource().getDatabaseType().getType();
+//        List blobColumnList = null;
+//        if (Objects.equals(type, "kingbase8") || Objects.equals(type, "PostgreSQL")) {
+//            blobColumnList = this.getBlobColumnList(distSql);
+//        }
+//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, blobColumnList);
+//        logicSQL.setSql(distSql);
         // logicSQL.setSql(logicSQL.getSql());
         
         ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
