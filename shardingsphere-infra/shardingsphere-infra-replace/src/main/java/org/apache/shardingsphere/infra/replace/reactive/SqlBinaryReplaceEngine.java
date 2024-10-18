@@ -393,7 +393,6 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     
     public static String handleHexStringWithPG(final String sql, List<String> blobColumnList) {
         String distSql = sql;
-        distSql = transferHexToChinesePg(distSql, blobColumnList);
         Pattern pattern = Pattern.compile(REGEX_FIND_X_DATA, Pattern.DOTALL | Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(distSql);
         List<String> hexList = new ArrayList<>();

@@ -113,9 +113,7 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             if (StringUtils.isEmpty(databaseType)) {
                 databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("dbname");
             }
-            List blobColumnList = this.getBlobColumnList(distSql, jdbcExecutionUnit);
-            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, databaseType, blobColumnList);
-
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, databaseType, null);
             T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
 //            T result = executeSQL(sqlUnit.getSql(), jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
