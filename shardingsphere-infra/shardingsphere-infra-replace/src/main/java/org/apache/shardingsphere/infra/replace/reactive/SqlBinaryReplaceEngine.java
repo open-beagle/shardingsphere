@@ -90,8 +90,8 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     private static String replaceSql(String sql, String databaseType, List<String> blobColumnList) {
         if (!Objects.equals(ENABLE_BINARY_REPLACE, "false")) {
             if (isHexSql(sql)) {
-                if (Objects.equals(databaseType, "Kingbase8 JDBC Driver")) {
-                    return handleHexStringWithPG(sql);
+                if (Objects.equals(databaseType, "Kingbase8 JDBC Driver") || Objects.equals(databaseType, "PostgreSQL")) {
+                    return handleHexStringWithPG(sql, blobColumnList);
                 } else if (Objects.equals(databaseType, "DAMENG")) {
                     // dm
                     return handleHexStringWithDM(sql, blobColumnList);
@@ -287,7 +287,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
 
     public static String handleHexStringWithPG(final String sql) {
         Pattern pattern = Pattern.compile(REGEX_FIND_X_DATA, Pattern.DOTALL | Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(sql);
+        Matcher matcher = pattern.matcher(distSql);
         List<String> hexList = new ArrayList<>();
         while (matcher.find()) {
             String hex = matcher.group();
@@ -297,8 +297,6 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
             }
 
         }
-
-        String distSql = sql;
         // 替换x''
         for (String hex : hexList) {
             int index = distSql.indexOf(hex);

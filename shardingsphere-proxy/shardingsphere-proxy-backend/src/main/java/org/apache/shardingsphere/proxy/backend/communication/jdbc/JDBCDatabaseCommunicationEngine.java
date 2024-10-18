@@ -216,7 +216,7 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
                     if(item instanceof SQLIdentifierExpr){
                         String columnName = ((SQLIdentifierExpr) item).getName();
                         if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
-                            blobColumnList.add(item);
+                            blobColumnList.add(((SQLIdentifierExpr) item).getSimpleName());
                         }
                     }
                 });
@@ -247,7 +247,7 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
                         if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
                             for (ShardingSphereColumn column : table.getColumns().values()) {
                                 if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
-                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001);
+                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001) || Objects.equals(column.getDataType(), -2);
                                 }
                             }
                         }
