@@ -151,15 +151,16 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
 
         // SQL 重写 2023年1月5日 update by pengsong
         LogicSQL logicSQL = getLogicSQL();
-        String rawSql = logicSQL.getSql();
-        // 先进行字符替换
-        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END);
-        // 再进行SQL重写
-        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName());
-        // 16进制数据重写
-        String type = getDatabase().getResource().getDatabaseType().getType();
-        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type);
-        logicSQL.setSql(distSql);
+//        String rawSql = logicSQL.getSql();
+//        // 先进行字符替换
+//        String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
+//        // 再进行SQL重写
+//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
+//        // 16进制数据重写
+//        String type = getDatabase().getResource().getDatabaseType().getType();
+//        distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, null);
+//        logicSQL.setSql(distSql);
+        logicSQL.setSql(logicSQL.getSql());
 
 
         ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
