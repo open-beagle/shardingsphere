@@ -103,22 +103,22 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             sqlExecutionHook.start(jdbcExecutionUnit.getExecutionUnit().getDataSourceName(), sqlUnit.getSql(), sqlUnit.getParameters(), dataSourceMetaData, isTrunkThread, dataMap);
 
             // SQL 重写 2023年1月5日 update by pengsong
-//            String rawSql = sqlUnit.getSql();
+            String rawSql = sqlUnit.getSql();
             // 先进行字符替换
-//            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
+            String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
             // 再进行SQL重写
-//            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName(), null);
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, jdbcExecutionUnit.getExecutionUnit().getDataSourceName(), null);
             // 16进制数据重写
-//            String databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("ApplicationName");
-//            if (StringUtils.isEmpty(databaseType)) {
-//                databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("dbname");
-//            }
-//            List blobColumnList = this.getBlobColumnList(distSql, jdbcExecutionUnit);
-//            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, databaseType, blobColumnList);
+            String databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("ApplicationName");
+            if (StringUtils.isEmpty(databaseType)) {
+                databaseType = jdbcExecutionUnit.getStorageResource().getConnection().getClientInfo("dbname");
+            }
+            List blobColumnList = this.getBlobColumnList(distSql, jdbcExecutionUnit);
+            distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, databaseType, blobColumnList);
 
-//            T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
+            T result = executeSQL(distSql, jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
 
-            T result = executeSQL(sqlUnit.getSql(), jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
+//            T result = executeSQL(sqlUnit.getSql(), jdbcExecutionUnit.getStorageResource(), jdbcExecutionUnit.getConnectionMode());
             sqlExecutionHook.finishSuccess();
             finishReport(dataMap, jdbcExecutionUnit);
             return result;
@@ -139,7 +139,12 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
     private List getBlobColumnList(String sql, final JDBCExecutionUnit jdbcExecutionUnit) {
         List blobColumnList = new ArrayList<>();
         try {
-            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
+            SQLStatementParser parser = null;
+            try {
+                parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
+            } catch (Exception e) {
+                parser = SQLParserUtils.createSQLStatementParser(sql, DbType.postgresql);
+            }
             com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
             if (statement instanceof SQLInsertStatement) {
                 SQLInsertStatement insertStatement = (com.alibaba.druid.sql.ast.statement.SQLInsertStatement) statement;
