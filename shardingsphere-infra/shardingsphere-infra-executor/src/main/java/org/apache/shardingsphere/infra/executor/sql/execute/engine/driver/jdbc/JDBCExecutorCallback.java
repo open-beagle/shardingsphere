@@ -180,16 +180,14 @@ public abstract class JDBCExecutorCallback<T> implements ExecutorCallback<JDBCEx
             String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
             Connection connection = jdbcExecutionUnit.getStorageResource().getConnection();
             String dbname = connection.getClientInfo("dbname");
-            if (Objects.equals(dbname, "Kingbase8")) {
-                ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
-                if (Objects.nonNull(database)) {
-                    for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
-                        for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {
-                            if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
-                                for (ShardingSphereColumn column : table.getColumns().values()) {
-                                    if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
-                                        return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001);
-                                    }
+            ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
+            if (Objects.nonNull(database)) {
+                for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
+                    for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {
+                        if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
+                            for (ShardingSphereColumn column : table.getColumns().values()) {
+                                if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
+                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001) || Objects.equals(column.getDataType(), -2);
                                 }
                             }
                         }
