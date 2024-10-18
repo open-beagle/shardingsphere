@@ -135,50 +135,47 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SneakyThrows(SQLException.class)
     public ResponseHeader execute() {
-//        LogicSQL logicSQL = getLogicSQL();
-//        ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
-//                logicSQL, getDatabase(), ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getProps());
-//        // TODO move federation route logic to binder
-//        SQLStatementContext<?> sqlStatementContext = logicSQL.getSqlStatementContext();
-//        MetaDataContexts metaDataContexts = ProxyContext.getInstance().getContextManager().getMetaDataContexts();
-//        ShardingSphereDatabase database = metaDataContexts.getMetaData().getDatabases().get(backendConnection.getConnectionSession().getDatabaseName());
-//        if (executionContext.getRouteContext().isFederated() || (sqlStatementContext instanceof SelectStatementContext
-//                && SystemSchemaUtil.containsSystemSchema(sqlStatementContext.getDatabaseType(), sqlStatementContext.getTablesContext().getSchemaNames(), database))) {
-//            ResultSet resultSet = doExecuteFederation(logicSQL, metaDataContexts);
-//            return processExecuteFederation(resultSet, metaDataContexts);
-//        }
-//        if (executionContext.getExecutionUnits().isEmpty()) {
-//            return new UpdateResponseHeader(executionContext.getSqlStatementContext().getSqlStatement());
-//        }
-//        proxySQLExecutor.checkExecutePrerequisites(executionContext);
-//        checkLockedDatabase(executionContext);
-//        List result = proxySQLExecutor.execute(executionContext);
-//        refreshMetaData(executionContext);
-//        Object executeResultSample = result.iterator().next();
-//        return executeResultSample instanceof QueryResult
-//                ? processExecuteQuery(executionContext, result, (QueryResult) executeResultSample)
-//                : processExecuteUpdate(executionContext, result);
-
-
-
+        // LogicSQL logicSQL = getLogicSQL();
+        // ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
+        // logicSQL, getDatabase(), ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getProps());
+        // // TODO move federation route logic to binder
+        // SQLStatementContext<?> sqlStatementContext = logicSQL.getSqlStatementContext();
+        // MetaDataContexts metaDataContexts = ProxyContext.getInstance().getContextManager().getMetaDataContexts();
+        // ShardingSphereDatabase database = metaDataContexts.getMetaData().getDatabases().get(backendConnection.getConnectionSession().getDatabaseName());
+        // if (executionContext.getRouteContext().isFederated() || (sqlStatementContext instanceof SelectStatementContext
+        // && SystemSchemaUtil.containsSystemSchema(sqlStatementContext.getDatabaseType(), sqlStatementContext.getTablesContext().getSchemaNames(), database))) {
+        // ResultSet resultSet = doExecuteFederation(logicSQL, metaDataContexts);
+        // return processExecuteFederation(resultSet, metaDataContexts);
+        // }
+        // if (executionContext.getExecutionUnits().isEmpty()) {
+        // return new UpdateResponseHeader(executionContext.getSqlStatementContext().getSqlStatement());
+        // }
+        // proxySQLExecutor.checkExecutePrerequisites(executionContext);
+        // checkLockedDatabase(executionContext);
+        // List result = proxySQLExecutor.execute(executionContext);
+        // refreshMetaData(executionContext);
+        // Object executeResultSample = result.iterator().next();
+        // return executeResultSample instanceof QueryResult
+        // ? processExecuteQuery(executionContext, result, (QueryResult) executeResultSample)
+        // : processExecuteUpdate(executionContext, result);
+        
         // SQL 重写 2023年1月5日 update by pengsong
         LogicSQL logicSQL = getLogicSQL();
         String rawSql = logicSQL.getSql();
-//        // 先进行字符替换
+        // // 先进行字符替换
         String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.BACK_END, null);
-//        // 再进行SQL重写
+        // // 再进行SQL重写
         distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REWRITE, distSql, getDatabase().getName(), null);
-//        // 16进制数据重写
+        // // 16进制数据重写
         String type = getDatabase().getResource().getDatabaseType().getType();
         List blobColumnList = null;
-        if(Objects.equals(type, "kingbase8") || Objects.equals(type, "PostgreSQL")) {
+        if (Objects.equals(type, "kingbase8") || Objects.equals(type, "PostgreSQL")) {
             blobColumnList = this.getBlobColumnList(distSql);
         }
         distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.BINARY, distSql, type, blobColumnList);
         logicSQL.setSql(distSql);
-//        logicSQL.setSql(logicSQL.getSql());
-
-
+        // logicSQL.setSql(logicSQL.getSql());
+        
         ExecutionContext executionContext = getKernelProcessor().generateExecutionContext(
                 logicSQL, getDatabase(), ProxyContext.getInstance().getContextManager().getMetaDataContexts().getMetaData().getProps());
         // TODO move federation route logic to binder
@@ -202,9 +199,9 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
                 ? processExecuteQuery(executionContext, result, (QueryResult) executeResultSample)
                 : processExecuteUpdate(executionContext, result);
     }
-
-    private List getBlobColumnList(String sql) {
-        List blobColumnList = new ArrayList<>();
+    
+    private List<String> getBlobColumnList(String sql) {
+        List<String> blobColumnList = new ArrayList<>();
         try {
             SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
             com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
@@ -213,7 +210,7 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
                 List<SQLExpr> columns = insertStatement.getColumns();
                 SQLName tableName = insertStatement.getTableName();
                 columns.forEach(item -> {
-                    if(item instanceof SQLIdentifierExpr){
+                    if (item instanceof SQLIdentifierExpr) {
                         String columnName = ((SQLIdentifierExpr) item).getName();
                         if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
                             blobColumnList.add(((SQLIdentifierExpr) item).getSimpleName());
@@ -236,7 +233,7 @@ public final class JDBCDatabaseCommunicationEngine extends DatabaseCommunication
         }
         return blobColumnList;
     }
-
+    
     private boolean isKingbaseBlob(String tableName, String fieldName) {
         try {
             String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
