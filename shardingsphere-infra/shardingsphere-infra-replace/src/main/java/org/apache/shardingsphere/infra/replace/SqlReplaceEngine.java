@@ -90,7 +90,7 @@ public class SqlReplaceEngine {
         return distSql;
     }
 
-    private static boolean isHexString(String input) {
+    public static boolean isHexString(String input) {
         String uppercaseInput = input.toUpperCase();
         boolean isHex = !uppercaseInput.isEmpty() && uppercaseInput.matches("[0-9A-F]+");
         return isHex;

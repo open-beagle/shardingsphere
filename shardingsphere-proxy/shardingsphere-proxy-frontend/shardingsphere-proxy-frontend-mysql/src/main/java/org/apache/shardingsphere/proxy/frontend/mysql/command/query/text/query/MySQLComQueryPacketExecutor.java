@@ -28,6 +28,7 @@ import com.alibaba.druid.sql.parser.SQLParserUtils;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.db.protocol.mysql.constant.MySQLConstants;
 import org.apache.shardingsphere.db.protocol.mysql.constant.MySQLServerErrorCode;
 import org.apache.shardingsphere.db.protocol.mysql.packet.MySQLPacket;
@@ -66,6 +67,8 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.DeleteStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.EmptyStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.UpdateStatement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -75,8 +78,9 @@ import java.util.*;
 /**
  * COM_QUERY command packet executor for MySQL.
  */
+@Slf4j
 public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
-    
+
     private final TextProtocolBackendHandler textProtocolBackendHandler;
     
     private final int characterSet;
@@ -148,7 +152,8 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
                         if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
                             for (ShardingSphereColumn column : table.getColumns().values()) {
                                 if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
-                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001) || Objects.equals(column.getDataType(), -2);
+                                    log.info("------- {} dataType is {}", fieldName, column.getDataType());
+                                    return Objects.equals(column.getDataType(), -2);
                                 }
                             }
                         }
@@ -158,6 +163,7 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
+        log.info("------- {} is not byteArray", fieldName);
         return false;
     }
     

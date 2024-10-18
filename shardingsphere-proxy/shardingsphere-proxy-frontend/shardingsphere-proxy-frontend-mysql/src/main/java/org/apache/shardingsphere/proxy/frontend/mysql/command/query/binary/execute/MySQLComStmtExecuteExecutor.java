@@ -17,6 +17,15 @@
 
 package org.apache.shardingsphere.proxy.frontend.mysql.command.query.binary.execute;
 
+import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.SQLName;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
+import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
+import com.alibaba.druid.sql.parser.SQLParserUtils;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import org.apache.shardingsphere.db.protocol.binary.BinaryCell;
@@ -30,9 +39,15 @@ import org.apache.shardingsphere.db.protocol.packet.DatabasePacket;
 import org.apache.shardingsphere.infra.binder.SQLStatementContextFactory;
 import org.apache.shardingsphere.infra.binder.statement.SQLStatementContext;
 import org.apache.shardingsphere.infra.binder.type.TableAvailable;
+import org.apache.shardingsphere.infra.database.DatabaseHolder;
+import org.apache.shardingsphere.infra.database.ThreadLocalManager;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
 import org.apache.shardingsphere.infra.executor.check.SQLCheckEngine;
+import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereColumn;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereSchema;
+import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereTable;
 import org.apache.shardingsphere.infra.replace.SqlReplaceEngine;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
 import org.apache.shardingsphere.infra.replace.dict.SQLStrReplaceTriggerModeEnum;
@@ -60,12 +75,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.tcl.TCLStatemen
 import org.apache.shardingsphere.transaction.utils.AutoCommitUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * COM_STMT_EXECUTE command executor for MySQL.
@@ -125,6 +135,20 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
         if (AutoCommitUtils.needOpenTransaction(sqlStatement)) {
             connectionSession.getBackendConnection().handleAutoCommit();
         }
+//        List<Integer> blobColumnList = getBlobColumnList(distSql);
+//        if(blobColumnList != null && blobColumnList.size() > 0) {
+//            List<Object> parameters = packet.getParameters();
+//            for (Integer index : blobColumnList) {
+//                if(parameters.size() >= index) {
+//                    String param = parameters.get(index).toString();
+//                    if(SqlReplaceEngine.isHexString(param)) {
+//                        parameters.set(index, SqlReplaceEngine.hexStr2Str(param));
+//                    }
+//                }
+//            }
+//        }
+
+
         SQLStatementContext<?> sqlStatementContext = SQLStatementContextFactory.newInstance(metaDataContexts.getMetaData().getDatabases(), packet.getParameters(),
                 sqlStatement, connectionSession.getDefaultDatabaseName());
         // TODO optimize SQLStatementDatabaseHolder
@@ -143,6 +167,65 @@ public final class MySQLComStmtExecuteExecutor implements QueryCommandExecutor {
         textProtocolBackendHandler = null;
         databaseCommunicationEngine = DatabaseCommunicationEngineFactory.getInstance().newBinaryProtocolInstance(sqlStatementContext, distSql, packet.getParameters(),
                 connectionSession.getBackendConnection());
+    }
+
+    private List<Integer> getBlobColumnList(String sql) {
+        List<Integer> blobColumnList = new ArrayList<>();
+        try {
+            SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
+            com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
+            if (statement instanceof SQLInsertStatement) {
+                SQLInsertStatement insertStatement = (com.alibaba.druid.sql.ast.statement.SQLInsertStatement) statement;
+                List<SQLExpr> columns = insertStatement.getColumns();
+                SQLName tableName = insertStatement.getTableName();
+                for (int i = 0; i < columns.size(); i++) {
+                    SQLExpr item = columns.get(i);
+                    if(item instanceof SQLIdentifierExpr){
+                        String columnName = ((SQLIdentifierExpr) item).getName();
+                        if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
+                            blobColumnList.add(i);
+                        }
+                    }
+                }
+            } else if (statement instanceof SQLUpdateStatement) {
+                SQLUpdateStatement updateStatement = (SQLUpdateStatement) statement;
+                List<SQLUpdateSetItem> columns = updateStatement.getItems();
+                SQLName tableName = updateStatement.getTableName();
+                for (int i = 0; i < columns.size(); i++) {
+                    SQLUpdateSetItem item = columns.get(i);
+                    String columnName = item.getColumn().toString();
+                    if (isKingbaseBlob(tableName.getSimpleName(), columnName)) {
+                        blobColumnList.add(i);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            return blobColumnList;
+        }
+        return blobColumnList;
+    }
+
+    private boolean isKingbaseBlob(String tableName, String fieldName) {
+        try {
+            String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
+            ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
+            if (Objects.nonNull(database)) {
+                for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
+                    for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {
+                        if (Objects.equals(table.getName().toLowerCase(Locale.ROOT), tableName.toLowerCase(Locale.ROOT))) {
+                            for (ShardingSphereColumn column : table.getColumns().values()) {
+                                if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
+                                    return Objects.equals(column.getDataType(), 17) || Objects.equals(column.getDataType(), 1001) || Objects.equals(column.getDataType(), -2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return false;
     }
     
     private static Collection<ShardingSphereRule> getRules(final String databaseName) {
