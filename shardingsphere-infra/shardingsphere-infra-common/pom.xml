@@ -25,14 +25,23 @@
     </parent>
     <artifactId>shardingsphere-infra-common</artifactId>
     <name>${project.artifactId}</name>
-    
+    <properties>
+        <fastjson.version>2.0.4</fastjson.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>shardingsphere-spi</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>shardingsphere-sql-parser-engine</artifactId>
