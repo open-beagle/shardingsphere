@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import org.apache.shardingsphere.infra.config.database.DatabaseConfiguration;
 import org.apache.shardingsphere.infra.config.props.ConfigurationProperties;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
+import org.apache.shardingsphere.infra.database.type.dialect.KingbaseDatabaseType;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -144,6 +145,10 @@ public final class DatabaseTypeEngine {
      * @return default schema name
      */
     public static String getDefaultSchemaName(final DatabaseType databaseType, final String databaseName) {
+        if (databaseType instanceof KingbaseDatabaseType) {
+            // 金仓数据库，默认获取从配置文件中指定的databaseName
+            return databaseName;
+        }
         return databaseType instanceof SchemaSupportedDatabaseType ? ((SchemaSupportedDatabaseType) databaseType).getDefaultSchema() : databaseName;
     }
 }

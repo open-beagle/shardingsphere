@@ -97,7 +97,7 @@ public final class GenericSchemaBuilder {
     private static Map<String, SchemaMetaData> translate(final Map<String, SchemaMetaData> schemaMetaDataMap, final GenericSchemaBuilderMaterials materials) {
         Map<String, SchemaMetaData> result = new LinkedHashMap<>();
         String defaultSchemaName = DatabaseTypeEngine.getDefaultSchemaName(materials.getStorageType(), materials.getDefaultSchemaName());
-        log.info("-------- translate方法中获取的默认连接schema为：{}", defaultSchemaName);
+        log.info("-------- translate方法中获取的默认连接schema为：{}:materials默认的schema为:{}", defaultSchemaName, materials.getDefaultSchemaName());
         schemaMetaDataMap.forEach((schema, schemaMetaDataMa)-> {
             log.info("-------- 当前从南向数据库中获取的schema为：{}", schema);
         });

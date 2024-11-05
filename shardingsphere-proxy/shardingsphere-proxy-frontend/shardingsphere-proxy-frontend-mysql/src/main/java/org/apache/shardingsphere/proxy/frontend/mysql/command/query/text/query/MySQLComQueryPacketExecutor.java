@@ -142,11 +142,11 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
             String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
             log.info("当前的databaseName为：{}", databaseName);
             ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
+            ProxyContext.getInstance().getAllDatabaseNames().forEach(each-> {
+                log.info("-----------当前南向数据库缓存的元数据数据库为:{}", each);
+            });
             if (Objects.isNull(database)) {
                 log.info("-----------当前 未加载到对应的南向数据库的元数据");
-                ProxyContext.getInstance().getAllDatabaseNames().forEach(each-> {
-                    log.info("-----------当前南向数据库缓存的元数据数据库为:{}", each);
-                });
             }
             if (Objects.nonNull(database)) {
                 for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
