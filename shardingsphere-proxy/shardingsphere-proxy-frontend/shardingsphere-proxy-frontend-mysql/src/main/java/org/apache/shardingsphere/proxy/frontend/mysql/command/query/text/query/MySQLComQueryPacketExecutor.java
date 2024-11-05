@@ -42,7 +42,6 @@ import org.apache.shardingsphere.infra.database.DatabaseHolder;
 import org.apache.shardingsphere.infra.database.ThreadLocalManager;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeFactory;
-import org.apache.shardingsphere.infra.executor.sql.execute.engine.driver.jdbc.JDBCExecutionUnit;
 import org.apache.shardingsphere.infra.metadata.database.ShardingSphereDatabase;
 import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereColumn;
 import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereSchema;
@@ -67,11 +66,7 @@ import org.apache.shardingsphere.sql.parser.sql.common.statement.SQLStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.DeleteStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.EmptyStatement;
 import org.apache.shardingsphere.sql.parser.sql.common.statement.dml.UpdateStatement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -145,7 +140,14 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
     private boolean isKingbaseBlob(String tableName, String fieldName) {
         try {
             String databaseName = ThreadLocalManager.getBackendConnectionDatabase();
+            log.info("当前的databaseName为：{}", databaseName);
             ShardingSphereDatabase database = DatabaseHolder.getDatabase(databaseName);
+            if (Objects.isNull(database)) {
+                log.info("-----------当前 未加载到对应的南向数据库的元数据");
+                ProxyContext.getInstance().getAllDatabaseNames().forEach(each-> {
+                    log.info("-----------当前南向数据库缓存的元数据数据库为:{}", each);
+                });
+            }
             if (Objects.nonNull(database)) {
                 for (ShardingSphereSchema shardingSphereSchema : database.getSchemas().values()) {
                     for (ShardingSphereTable table : shardingSphereSchema.getTables().values()) {
