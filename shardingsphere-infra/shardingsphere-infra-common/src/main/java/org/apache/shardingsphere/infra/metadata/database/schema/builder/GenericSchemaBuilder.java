@@ -17,6 +17,7 @@
 
 package org.apache.shardingsphere.infra.metadata.database.schema.builder;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.config.props.ConfigurationPropertyKey;
 import org.apache.shardingsphere.infra.database.type.DatabaseTypeEngine;
 import org.apache.shardingsphere.infra.metadata.database.schema.decorator.model.ShardingSphereColumn;
@@ -47,7 +48,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
+@Slf4j
 /**
  * Generic schema builder.
  */
@@ -95,9 +96,14 @@ public final class GenericSchemaBuilder {
     
     private static Map<String, SchemaMetaData> translate(final Map<String, SchemaMetaData> schemaMetaDataMap, final GenericSchemaBuilderMaterials materials) {
         Map<String, SchemaMetaData> result = new LinkedHashMap<>();
-        Collection<TableMetaData> tableMetaDataList = Optional.ofNullable(schemaMetaDataMap.get(
-                DatabaseTypeEngine.getDefaultSchemaName(materials.getStorageType(), materials.getDefaultSchemaName()))).map(SchemaMetaData::getTables).orElseGet(Collections::emptyList);
+        String defaultSchemaName = DatabaseTypeEngine.getDefaultSchemaName(materials.getStorageType(), materials.getDefaultSchemaName());
+        log.info("-------- translate方法中获取的默认连接schema为：{}", defaultSchemaName);
+        schemaMetaDataMap.forEach((schema, schemaMetaDataMa)-> {
+            log.info("-------- 当前从南向数据库中获取的schema为：{}", schema);
+        });
+        Collection<TableMetaData> tableMetaDataList = Optional.ofNullable(schemaMetaDataMap.get(defaultSchemaName)).map(SchemaMetaData::getTables).orElseGet(Collections::emptyList);
         String frontendSchemaName = DatabaseTypeEngine.getDefaultSchemaName(materials.getProtocolType(), materials.getDefaultSchemaName());
+        log.info("-------- 当前设置frontendSchemaName：{}的table集合是否为空：{}", defaultSchemaName, (tableMetaDataList.isEmpty()));
         result.put(frontendSchemaName, new SchemaMetaData(frontendSchemaName, tableMetaDataList));
         return result;
     }

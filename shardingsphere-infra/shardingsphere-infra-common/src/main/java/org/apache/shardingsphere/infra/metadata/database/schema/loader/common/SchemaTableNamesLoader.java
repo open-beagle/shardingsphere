@@ -17,8 +17,10 @@
 
 package org.apache.shardingsphere.infra.metadata.database.schema.loader.common;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.database.type.DatabaseType;
 import org.apache.shardingsphere.infra.database.type.dialect.OpenGaussDatabaseType;
 import org.apache.shardingsphere.infra.database.type.dialect.PostgreSQLDatabaseType;
@@ -37,6 +39,7 @@ import java.util.Map;
 /**
  * Schema table names loader.
  */
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SchemaTableNamesLoader {
     
@@ -67,15 +70,20 @@ public final class SchemaTableNamesLoader {
     private static Map<String, Collection<String>> loadSchemaTableNames(final Connection connection, final String databaseName,
                                                                         final DatabaseType databaseType, final Collection<String> schemaNames) throws SQLException {
         Map<String, Collection<String>> result = new HashMap<>(schemaNames.size(), 1);
+        log.info("-------- 南向数据库的databaseType的类型为：{},如果不是pg或者opengauss，则获取配置文件指定的databaseName：{}", databaseType.getType(), databaseName);
         for (String each : schemaNames) {
             String schemaName = databaseType instanceof PostgreSQLDatabaseType || databaseType instanceof OpenGaussDatabaseType ? each : databaseName;
             result.put(schemaName, loadSchemaTableNames(connection, each));
         }
+        result.forEach((schemaName, tableNames)-> {
+            log.info("-------- 最终获取的南向数据库的schema:{}的table集合为：{}", schemaName, JSON.toJSONString(tableNames));
+        });
         return result;
     }
     
     private static Collection<String> loadSchemaTableNames(final Connection connection, final String schemaName) throws SQLException {
         Collection<String> result = new LinkedList<>();
+        log.info("-------- 从南向数据库的connection中获取tables数据,此时的schemaName为：{}, catalog为：{}", schemaName, connection.getCatalog());
         try (ResultSet resultSet = connection.getMetaData().getTables(connection.getCatalog(), schemaName, null, new String[]{TABLE_TYPE, VIEW_TYPE})) {
             while (resultSet.next()) {
                 String table = resultSet.getString(TABLE_NAME);
@@ -88,6 +96,7 @@ public final class SchemaTableNamesLoader {
     }
     
     private static Collection<String> loadSchemaNames(final Connection connection, final DatabaseType databaseType) throws SQLException {
+        log.info("-------- 加载南向数据库：{}的schema名字,如果不是pg和opengauss，则获取connection的元数据的所有schema", databaseType.getType() );
         if (!(databaseType instanceof PostgreSQLDatabaseType) && !(databaseType instanceof OpenGaussDatabaseType)) {
             return Collections.singletonList(connection.getSchema());
         }
@@ -100,6 +109,9 @@ public final class SchemaTableNamesLoader {
                 }
             }
         }
+        result.forEach(schema-> {
+            log.info("-------- 最终获取的所有schema为:{}", schema);
+        });
         return result.isEmpty() ? Collections.singletonList(connection.getSchema()) : result;
     }
     
