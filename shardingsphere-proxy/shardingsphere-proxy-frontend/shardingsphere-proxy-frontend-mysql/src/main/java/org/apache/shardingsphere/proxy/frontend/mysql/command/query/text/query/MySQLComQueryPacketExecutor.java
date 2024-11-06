@@ -155,7 +155,20 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
                             for (ShardingSphereColumn column : table.getColumns().values()) {
                                 if (Objects.equals(column.getName().toLowerCase(Locale.ROOT), fieldName.toLowerCase(Locale.ROOT))) {
                                     log.info("------- {} dataType is {}", fieldName, column.getDataType());
-                                    return Objects.equals(column.getDataType(), -2);
+                                    switch (column.getDataType()) {
+                                        case -2:
+                                            // bytea
+                                        case -3:
+                                            // tinyblob
+                                        case -4:
+                                            // blob
+                                            // mediumblob
+                                            // longblob
+                                            log.info("column :{},  dataType:{} is blob or bytea ", fieldName, column.getDataType());
+                                            return true;
+                                        default:
+                                            return false;
+                                    }
                                 }
                             }
                         }
