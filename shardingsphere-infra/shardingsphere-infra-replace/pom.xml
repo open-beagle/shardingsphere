@@ -8,8 +8,15 @@
     </parent>
     <artifactId>shardingsphere-infra-replace</artifactId>
     <name>${project.artifactId}</name>
-    
+    <properties>
+        <hutool.version>5.8.17</hutool.version>
+    </properties>
     <dependencies>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

@@ -17,9 +17,13 @@
 
 package org.apache.shardingsphere.infra.replace;
 
+import cn.hutool.core.text.CharSequenceUtil;
+import cn.hutool.core.util.HexUtil;
 import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.ast.SQLExpr;
+import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
 import com.alibaba.druid.sql.ast.expr.SQLHexExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
@@ -28,17 +32,19 @@ import com.alibaba.druid.sql.parser.SQLParserUtils;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.alibaba.druid.sql.visitor.SchemaStatVisitor;
 import com.alibaba.druid.stat.TableStat;
+import com.alibaba.druid.util.StringUtils;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author SmileCircle
@@ -98,7 +104,115 @@ public class SqlReplaceEngine {
 //        System.out.println(hexToChar(sql, new ArrayList<>()));
 //    }
 
+    public static void main(String[] args) {
+        String sql = "INSERT INTO GZJJD_JYGZ.XLJZ_XLJZ_XLZXJLBDJ( \n" +
+                "     ID,\n" +
+                "     SBM,\n" +
+                "     SMC,\n" +
+                "     DB_MC,\n" +
+                "     DB_BM,\n" +
+                "     CJ_RQ,\n" +
+                "     CJR_ID,\n" +
+                "     CJR_XM,\n" +
+                "     GX_RQ,\n" +
+                "     GXR_ID,\n" +
+                "     GXR_XM,\n" +
+                "     XM,\n" +
+                "     BH,\n" +
+                "     XLZXS,\n" +
+                "     ZXRQ,\n" +
+                "     QTZK,\n" +
+                "     QXZK,\n" +
+                "     ZZL,\n" +
+                "     YZL,\n" +
+                "     RJGX,\n" +
+                "     ZKGSFTY,\n" +
+                "     GRTC,\n" +
+                "     SHZCXT,\n" +
+                "     XLCY,\n" +
+                "     XSZK,\n" +
+                "     CBZD,\n" +
+                "     ZXFS,\n" +
+                "     JDRYZS,\n" +
+                "     ZXJSJDC,\n" +
+                "     ZXXG,\n" +
+                "     XLWTLX,\n" +
+                "     AQFXQX,\n" +
+                "     XLWTJY,\n" +
+                "     ZXZRYJ,\n" +
+                "     BZ\n" +
+                "    )\n" +
+                "     VALUES\n" +
+                "     (\n" +
+                "     'af9c3ec1124042f9930985762cc70c30',\n" +
+                "     '520000',\n" +
+                "     '贵州省戒毒管理局',\n" +
+                "     '男性专管大队',\n" +
+                "     '5200000007',\n" +
+                "     '2024-11-06 22:26:36.708',\n" +
+                "     '3000',\n" +
+                "     '局管理员',\n" +
+                "     null,\n" +
+                "     null,\n" +
+                "     null,\n" +
+                "     '罗平',\n" +
+                "     '5201062023004420',\n" +
+                "     '罗永亮',\n" +
+                "     '2024-11-06',\n" +
+                "     '正常',\n" +
+                "     '正常',\n" +
+                "     '正常',\n" +
+                "     '正常',\n" +
+                "     '正常',\n" +
+                "     '01',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     '01',\n" +
+                "     '正常\n" +
+                "正常\n" +
+                "正常',\n" +
+                "     x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8',\n" +
+                "     x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8',\n" +
+                "     x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8'\n" +
+                "     )";
+        String sql2 = "update mytable set col2=x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', col4 = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8' where 1=1 ";
+        String res  = transferHexToChinesePg(sql, Lists.newArrayList("XLWTJY","BZ"));
+//        String res  = transferHexToChinesePg(sql2, Lists.newArrayList("col2","col4"));
+        System.out.println(res);
+    }
 
+    private static String getRealName(String name) {
+        // todo 还需要测试dm在大小写配置敏感时，对小写通过引号的支持
+        // 当列名、表名含有特殊字符时，需要去除
+        if (!StringUtils.isEmpty(name) &&
+                (name.startsWith("`") && name.endsWith("`")) || (name.startsWith("\"") && name.endsWith("\"")) || (name.startsWith("'") && name.endsWith("'"))) {
+            return name.substring(1, name.length() - 1);
+        }
+        return name;
+    }
     private static String transferHexToChinesePg(String distSql, List<String> blobColumnList) {
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(distSql, DbType.mysql);
         com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
@@ -106,73 +220,62 @@ public class SqlReplaceEngine {
         // 字段和数据对应列表
         // sql语句hex字段中文替换
         AtomicReference<String> executeSql = new AtomicReference<>(distSql);
+        boolean needModifyFlag = false;
         if (statement instanceof SQLInsertStatement) {
             SQLInsertStatement insertStatement = (com.alibaba.druid.sql.ast.statement.SQLInsertStatement) statement;
             List<SQLExpr> columns = insertStatement.getColumns();
-            Map<Integer, String> columnMap = columns.stream().collect(Collectors.toMap(columns::indexOf, item -> item.toString()));
-
-            LinkedHashMap<Integer, List<String>> valueMap = new LinkedHashMap<>();
             List<SQLInsertStatement.ValuesClause> values = insertStatement.getValuesList();
-            values.forEach(valuesClause -> {
+            for (int j = 0; j < values.size(); j++) {
+                SQLInsertStatement.ValuesClause valuesClause = values.get(j);
                 List<SQLExpr> valueList = valuesClause.getValues();
                 for (int i = 0; i < valueList.size(); i++) {
                     SQLExpr sqlExpr = valueList.get(i);
                     if (sqlExpr instanceof SQLHexExpr) {
                         String value = ((SQLHexExpr) sqlExpr).getHex();
-                        List<String> dataList = valueMap.get(i);
-                        if (dataList != null && dataList.size() > 0) {
-                            dataList.add(value);
-                        } else {
-                            dataList = new ArrayList<>();
-                            dataList.add(value);
-                        }
-                        valueMap.put(i, dataList);
-                    }
-                }
-            });
-
-            columnMap.forEach((key, item) -> {
-                if (!blobColumnList.contains(item)) {
-                    List<String> valueList = valueMap.get(key);
-                    if (valueList != null && valueList.size() > 0) {
-                        valueList.forEach(valueData -> {
-                            if (isHexString(valueData)) {
-                                String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'", "''") + "'";
-                                String newSql = executeSql.get();
-                                int index = newSql.indexOf(valueData);
-                                String frontSql = newSql.substring(0, index - 2);
-                                String backSql = newSql.substring(index + valueData.length());
-                                if (backSql.startsWith("'")) {
-                                    backSql = backSql.substring(1);
+                        if (CharSequenceUtil.isBlank(value) || isHexString(value)) {
+                            SQLExpr sqlColumnExpr = columns.get(i);
+                            if (sqlColumnExpr instanceof SQLIdentifierExpr) {
+                                SQLIdentifierExpr sqlIdentifierExpr = (SQLIdentifierExpr) sqlColumnExpr;
+                                String finalColumnNames = CharSequenceUtil.blankToDefault(getRealName(sqlIdentifierExpr.getSimpleName()), "");
+                                boolean blobColumnFlag = blobColumnList.stream().anyMatch(col-> finalColumnNames.equalsIgnoreCase(col));
+                                if (!blobColumnFlag) {
+                                    // 暂定 由16进制换成 字符串
+                                    if (CharSequenceUtil.isBlank(value)) {
+                                        valuesClause.getValues().set(i, null);
+                                        needModifyFlag = true;
+                                    }else {
+                                        value = HexUtil.decodeHexStr(value);
+                                        valuesClause.getValues().set(i, new SQLCharExpr(value));
+                                        needModifyFlag = true;
+                                    }
                                 }
-                                executeSql.set(frontSql + chineseStr + backSql);
+                                // 如果是blob字段，统一到JdbcExecutorCallBack类中执行
                             }
-                        });
+                        }
                     }
                 }
-            });
+            }
         } else if (statement instanceof SQLUpdateStatement) {
             SQLUpdateStatement updateStatement = (SQLUpdateStatement) statement;
             List<SQLUpdateSetItem> items = updateStatement.getItems();
-            items.forEach(item -> {
+            for (int i = 0; i < items.size(); i++) {
+                SQLUpdateSetItem item = items.get(i);
                 String columnName = String.valueOf(item.getColumn());
                 SQLExpr value = item.getValue();
                 if (!blobColumnList.contains(columnName) && value instanceof SQLHexExpr) {
                     String valueData = ((SQLHexExpr) value).getHex();
-                    if (isHexString(valueData)) {
-                        String chineseStr = "'" + hexStr2Str(valueData).replaceAll("'", "''") + "'";
-                        String newSql = executeSql.get();
-                        int index = newSql.indexOf(valueData);
-                        String frontSql = newSql.substring(0, index - 2);
-                        // 去除hex后面的'符合
-                        String backSql = newSql.substring(index + valueData.length());
-                        if (backSql.startsWith("'")) {
-                            backSql = backSql.substring(1);
+                    if (CharSequenceUtil.isBlank(valueData) ) {
+                        item.setValue(null);
+                        needModifyFlag = true;
+                    }else {
+                        if (isHexString(valueData)) {
+                            valueData = HexUtil.decodeHexStr(valueData);
+                            item.setValue(new SQLCharExpr(valueData));
+                            needModifyFlag = true;
                         }
-                        executeSql.set(frontSql + chineseStr + backSql);
                     }
                 }
-            });
+            }
         } else if (statement instanceof SQLSelectStatement) {
             SchemaStatVisitor visitor = new SchemaStatVisitor(DbType.valueOf(DbType.mysql.name()));
             statement.accept(visitor);
@@ -203,8 +306,16 @@ public class SqlReplaceEngine {
                     }
                 });
             }
+            return executeSql.get();
         }
-        return executeSql.get();
+        if (needModifyFlag) {
+            // statement.toString 会自动格式化sql，目前找不到对应的方法去除
+            // 只有进行了16进制转换中文的，才返回
+            return statement.toString();
+        }else {
+            // 啥都没处理的，返回原sql
+            return executeSql.get();
+        }
     }
 
     // 16进制直接转换成为汉字
