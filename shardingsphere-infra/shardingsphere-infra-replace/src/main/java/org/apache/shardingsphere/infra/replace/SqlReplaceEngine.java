@@ -200,10 +200,10 @@ public class SqlReplaceEngine {
                 "     x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8'\n" +
                 "     )";
         String sql2 = "update mytable set col2=x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', col4 = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8' where 1=1 ";
-        String res  = transferHexToChinesePg(sql, Lists.newArrayList("XLWTJY","BZ"));
-//        String res2  = transferHexToChinesePg(sql2, Lists.newArrayList("col4"));
-        System.out.println(res);
-//        System.out.println(res2);
+//        String res  = transferHexToChinesePg(sql, Lists.newArrayList("XLWTJY","BZ"));
+        String res2  = transferHexToChinesePg(sql2, Lists.newArrayList("col4"));
+//        System.out.println(res);
+        System.out.println(res2);
     }
 
     private static String getRealName(String name) {
@@ -239,7 +239,7 @@ public class SqlReplaceEngine {
                             SQLExpr sqlColumnExpr = columns.get(i);
                             if (sqlColumnExpr instanceof SQLIdentifierExpr) {
                                 SQLIdentifierExpr sqlIdentifierExpr = (SQLIdentifierExpr) sqlColumnExpr;
-                                String finalColumnNames = CharSequenceUtil.blankToDefault(getRealName(sqlIdentifierExpr.getSimpleName()), "");
+                                String finalColumnNames = CharSequenceUtil.blankToDefault(sqlIdentifierExpr.getSimpleName(), "");
                                 boolean blobColumnFlag = blobColumnList.stream().anyMatch(col-> finalColumnNames.equalsIgnoreCase(col));
                                 if (!blobColumnFlag) {
                                     // 暂定 由16进制换成 字符串
@@ -263,7 +263,7 @@ public class SqlReplaceEngine {
             List<SQLUpdateSetItem> items = updateStatement.getItems();
             for (int i = 0; i < items.size(); i++) {
                 SQLUpdateSetItem item = items.get(i);
-                String columnName  = CharSequenceUtil.blankToDefault(getRealName(item.getColumn().toString()), "");
+                String columnName  = CharSequenceUtil.blankToDefault(item.getColumn().toString(), "");
                 SQLExpr value = item.getValue();
                 if (!blobColumnList.contains(columnName) && value instanceof SQLHexExpr) {
                     String valueData = ((SQLHexExpr) value).getHex();
