@@ -201,8 +201,9 @@ public class SqlReplaceEngine {
                 "     )";
         String sql2 = "update mytable set col2=x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8', col4 = x'E6ADA3E5B8B80D0AE6ADA3E5B8B80D0AE6ADA3E5B8B8' where 1=1 ";
         String res  = transferHexToChinesePg(sql, Lists.newArrayList("XLWTJY","BZ"));
-//        String res  = transferHexToChinesePg(sql2, Lists.newArrayList("col2","col4"));
+//        String res2  = transferHexToChinesePg(sql2, Lists.newArrayList("col4"));
         System.out.println(res);
+//        System.out.println(res2);
     }
 
     private static String getRealName(String name) {
@@ -262,7 +263,7 @@ public class SqlReplaceEngine {
             List<SQLUpdateSetItem> items = updateStatement.getItems();
             for (int i = 0; i < items.size(); i++) {
                 SQLUpdateSetItem item = items.get(i);
-                String columnName = String.valueOf(item.getColumn());
+                String columnName  = CharSequenceUtil.blankToDefault(getRealName(item.getColumn().toString()), "");
                 SQLExpr value = item.getValue();
                 if (!blobColumnList.contains(columnName) && value instanceof SQLHexExpr) {
                     String valueData = ((SQLHexExpr) value).getHex();
