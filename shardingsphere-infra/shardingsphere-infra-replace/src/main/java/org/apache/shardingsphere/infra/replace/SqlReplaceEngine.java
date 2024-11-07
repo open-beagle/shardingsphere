@@ -33,6 +33,7 @@ import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.alibaba.druid.sql.visitor.SchemaStatVisitor;
 import com.alibaba.druid.stat.TableStat;
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson2.JSON;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.infra.replace.dict.SQLReplaceTypeEnum;
@@ -214,6 +215,7 @@ public class SqlReplaceEngine {
         return name;
     }
     private static String transferHexToChinesePg(String distSql, List<String> blobColumnList) {
+        log.info("-------- 当前的sql：{}，是blob、bytea的字段有：{}", distSql, JSON.toJSONString(blobColumnList));
         SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(distSql, DbType.mysql);
         com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
 
