@@ -94,6 +94,7 @@ public final class MySQLComQueryPacketExecutor implements QueryCommandExecutor {
 
         // 前向SQL 替换  2023年2月6日 update by pengsong
         String rawSql = packet.getSql();
+        log.info("MySQL ComQuery SQL : {}", rawSql);
         String distSql = SqlReplaceEngine.replaceSql(SQLReplaceTypeEnum.REPLACE, rawSql, SQLStrReplaceTriggerModeEnum.FRONT_END, null);
         distSql = SqlReplaceEngine.hexToChar(distSql, getBlobColumnList(distSql));
         DatabaseType databaseType = DatabaseTypeFactory.getInstance("MySQL");
