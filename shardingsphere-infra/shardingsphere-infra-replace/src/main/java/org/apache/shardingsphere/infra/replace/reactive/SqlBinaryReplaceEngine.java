@@ -462,8 +462,10 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
             }
             while (matcher0X.find()) {
                 String hex = matcher0X.group(1);
-                log.info(" ========= other hex data: {}", hex);
-                otherHexList.add(hex);
+                if (isHex(hex)) {
+                    log.info(" ========= other hex data: {}", hex);
+                    otherHexList.add(hex);
+                }
             }
             // 替换x''
             for (String hex : hexList) {
