@@ -17,9 +17,11 @@
 
 package org.apache.shardingsphere.infra.replace.reactive;
 
+import cn.hutool.core.text.CharSequenceUtil;
 import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLHexExpr;
+import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
@@ -52,12 +54,16 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     /**
      * 匹配 插入/修改SQL 中含有 x开头的 二进制
      */
-    private static final String REGEX_X = "^(insert|update|select).*x'.*'.*";
+    private static final String REGEX_X = "(0x[0-9A-Fa-f]+|x'[0-9A-Fa-f]+')";
     /**
      * 寻找 x''中间的内容
      */
     private static final String REGEX_FIND_X_DATA = "(?<=x').*?(?=')";
-    
+    /**
+     * 寻找 16进制中0x后面的内容
+     */
+    private static final String REGEX_FIND_0X_DATA = "0x([0-9A-Fa-f]+)";
+
     /**
      * 匹配字符串是否是16进制
      */
@@ -67,7 +73,10 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     
     @Override
     public String replace(String sql, Object obj, List<String> blobColumnList) {
-        return replaceSql(sql, Objects.nonNull(obj) ? (String) obj : "", blobColumnList);
+        log.info("....... 使用二进制转换前，源sql为：{}", sql);
+        String finalSql = replaceSql(sql, Objects.nonNull(obj) ? (String) obj : "", blobColumnList);
+        log.info("....... 使用二进制转换后，最终sql为：{}", finalSql);
+        return finalSql;
     }
     
     @Override
@@ -88,14 +97,11 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
      */
     private static String replaceSql(String sql, String databaseType, List<String> blobColumnList) {
         if (!Objects.equals(ENABLE_BINARY_REPLACE, "false")) {
-            if (isHexSql(sql)) {
-                if (Objects.equals(databaseType, "Kingbase8 JDBC Driver") || Objects.equals(databaseType, "PostgreSQL")) {
-                    return handleHexStringWithPG(sql, blobColumnList);
-                } else if (Objects.equals(databaseType, "DAMENG")) {
-                    // dm
-                    return handleHexStringWithDM(sql, blobColumnList);
-
-                }
+            if (Objects.equals(databaseType, "Kingbase8 JDBC Driver") || Objects.equals(databaseType, "PostgreSQL")) {
+                return handleHexStringWithPG(sql, blobColumnList);
+            } else if (Objects.equals(databaseType, "DAMENG")) {
+                // dm
+                return handleHexStringWithDM(sql, blobColumnList);
             }
         }
         return sql;
@@ -384,7 +390,7 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     public static boolean isHexSql(String sql) {
         if (StringUtils.isNotBlank(sql.toLowerCase(Locale.ROOT))) {
             sql = sql.toLowerCase();
-            Pattern pattern = Pattern.compile(REGEX_X, Pattern.DOTALL | Pattern.MULTILINE);
+            Pattern pattern = Pattern.compile(REGEX_X, Pattern.DOTALL | Pattern.MULTILINE| Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(sql);
             return matcher.matches();
         }
@@ -393,23 +399,89 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
     
     public static String handleHexStringWithPG(final String sql, List<String> blobColumnList) {
         String distSql = sql;
-        Pattern pattern = Pattern.compile(REGEX_FIND_X_DATA, Pattern.DOTALL | Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(distSql);
-        List<String> hexList = new ArrayList<>();
-        while (matcher.find()) {
-            String hex = matcher.group();
-            if (isHex(hex)) {
-                log.info(" ========= hex data: {}", hex);
-                hexList.add(hex);
+        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(distSql, DbType.mysql);
+        com.alibaba.druid.sql.ast.SQLStatement statement = parser.parseStatement();
+
+        // 字段和数据对应列表
+        // sql语句hex字段中文替换
+        if (statement instanceof SQLInsertStatement) {
+            SQLInsertStatement insertStatement = (com.alibaba.druid.sql.ast.statement.SQLInsertStatement) statement;
+            List<SQLInsertStatement.ValuesClause> values = insertStatement.getValuesList();
+            for (int j = 0; j < values.size(); j++) {
+                SQLInsertStatement.ValuesClause valuesClause = values.get(j);
+                List<SQLExpr> valueList = valuesClause.getValues();
+                for (int i = 0; i < valueList.size(); i++) {
+                    SQLExpr sqlExpr = valueList.get(i);
+                    if (sqlExpr instanceof SQLHexExpr) {
+                        String value = ((SQLHexExpr) sqlExpr).getHex();
+                        if (CharSequenceUtil.isBlank(value) || isHexString(value)) {
+                            // 暂定 由16进制换成 字符串
+                            if (CharSequenceUtil.isBlank(value)) {
+                                valuesClause.getValues().set(i, null);
+                            }else {
+                                value =  "E'" + escapeBytes(hex2Byte(value)) + "'";
+                                valuesClause.getValues().set(i, new SQLIdentifierExpr(value));
+                            }
+                        }
+                    }
+                }
             }
-        }
-        // 替换x''
-        for (String hex : hexList) {
-            int index = distSql.indexOf(hex);
-            String frontSql = distSql.substring(0, index - 2);
-            String backSql = distSql.substring(index + hex.length());
-            String binaryString = escapeBytes(hex2Byte(hex));
-            distSql = frontSql + "E'" + binaryString + backSql;
+            return statement.toString();
+        } else if (statement instanceof SQLUpdateStatement) {
+            SQLUpdateStatement updateStatement = (SQLUpdateStatement) statement;
+            List<SQLUpdateSetItem> items = updateStatement.getItems();
+            for (int i = 0; i < items.size(); i++) {
+                SQLUpdateSetItem item = items.get(i);
+                SQLExpr value = item.getValue();
+                if (value instanceof SQLHexExpr) {
+                    String valueData = ((SQLHexExpr) value).getHex();
+                    if (CharSequenceUtil.isBlank(valueData) ) {
+                        item.setValue(null);
+                    }else {
+                        if (isHexString(valueData)) {
+                            valueData =  "E'" + escapeBytes(hex2Byte(valueData)) + "'";
+                            item.setValue(new SQLIdentifierExpr(valueData));
+                        }
+                    }
+                }
+            }
+            return statement.toString();
+        } else if (statement instanceof SQLSelectStatement) {
+            Pattern patternX = Pattern.compile(REGEX_FIND_X_DATA, Pattern.DOTALL | Pattern.MULTILINE);
+            Pattern pattern0X = Pattern.compile(REGEX_FIND_0X_DATA, Pattern.DOTALL | Pattern.MULTILINE);
+            Matcher matcherX = patternX.matcher(distSql);
+            Matcher matcher0X = pattern0X.matcher(distSql);
+            List<String> hexList = new ArrayList<>();
+            List<String> otherHexList = new ArrayList<>();
+            while (matcherX.find()) {
+                String hex = matcherX.group();
+                if (isHex(hex)) {
+                    log.info(" ========= hex data: {}", hex);
+                    hexList.add(hex);
+                }
+            }
+            while (matcher0X.find()) {
+                String hex = matcher0X.group(1);
+                log.info(" ========= other hex data: {}", hex);
+                otherHexList.add(hex);
+            }
+            // 替换x''
+            for (String hex : hexList) {
+                int index = distSql.indexOf(hex);
+                String frontSql = distSql.substring(0, index - 2);
+                String backSql = distSql.substring(index + hex.length());
+                String binaryString = escapeBytes(hex2Byte(hex));
+                distSql = frontSql + "E'" + binaryString + backSql;
+            }
+            // 替换0x12d后面的内容
+            for (String hex : otherHexList) {
+                int index = distSql.indexOf(hex);
+                String frontSql = distSql.substring(0, index - 2);
+                String backSql = distSql.substring(index + hex.length());
+                String binaryString = escapeBytes(hex2Byte(hex));
+                distSql = frontSql + "E'" + binaryString + "'" + backSql;
+            }
+            return distSql;
         }
         return distSql;
     }
@@ -563,5 +635,37 @@ public class SqlBinaryReplaceEngine implements SqlReplace {
         // String string = handleHexStringWithDM(sql);
         // System.out.println(string);
         // }
+        String sql = "INSERT INTO XLJZ_XLJZ_XLZXJLBDJ (ID, SBM, SMC, DB_MC, DB_BM\n" +
+                "\t, CJ_RQ, CJR_ID, CJR_XM, GX_RQ, GXR_ID\n" +
+                "\t, GXR_XM, XM, BH, XLZXS, ZXRQ\n" +
+                "\t, QTZK, QXZK, ZZL, YZL, RJGX\n" +
+                "\t, ZKGSFTY, GRTC, SHZCXT, XLCY, XSZK\n" +
+                "\t, CBZD, ZXFS, JDRYZS, ZXJSJDC, ZXXG\n" +
+                "\t, XLWTLX, AQFXQX, XLWTJY, ZXZRYJ, BZ)\n" +
+                "VALUES ('9809266578e3401f82571577c530999b', '520000', '贵州省戒毒管理局', '五大队', '5200000007'\n" +
+                "\t, '2024-11-12 22:06:08.387', '3000', '局管理员', NULL, NULL\n" +
+                "\t, NULL, '罗洪远', '5201012023000002', '罗永亮', '2024-11-12'\n" +
+                "\t, '正常', '正常', '正常', '正常', '正常'\n" +
+                "\t, '01', 0xE6ADA3E5B8B80D0AE6ADA3E5B8B8, '正常', '正常\n" +
+                "正常', '正常\n" +
+                "正常'\n" +
+                "\t, '正常\n" +
+                "正常', '正常\n" +
+                "正常', '正常\n" +
+                "正常', '正常\n" +
+                "正常', '正常\n" +
+                "正常'\n" +
+                "\t, '01', '正常\n" +
+                "正常', x'E6ADA3E5B8B80D0AE6ADA3E5B8B8', '正常\n" +
+                "正常', x'E6ADA3E5B8B80D0AE6ADA3E5B8B8')";
+
+        String sql2 = "select x'E6ADA3E5B8B80D0AE6ADA3E5B8B8' as col1, x'E6ADA3E5B8B80D0AE6ADA3E5B8B8' as col2" +
+                " from  table2 where col3 =  x'E6ADA3E5B8B80D0AE6ADA3E5B8B8' and col4 =   x'E6ADA3E5B8B80D0AE6ADA3E5B8B8'";
+        String sql3 = "select 0xE6ADA3E5B8B80D0AE6ADA3E5B8B8";
+//        System.out.println("处理0x的结果：" + handleHexStringWithPG(sql, null));
+//        System.out.println("处理x''的结果：" + handleHexStringWithPG(sql2, null));
+        System.out.println(replaceSql(sql, "PostgreSQL", null));
+        System.out.println(replaceSql(sql2, "PostgreSQL", null));
+        System.out.println(replaceSql(sql3, "PostgreSQL", null));
     }
 }
